@@ -1,0 +1,24 @@
+# Node.js dependencies & build output
+node_modules/
+api/node_modules/
+dist/
+api/dist/
+
+# Python cache & virtualenv
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# Environment files
+.env
+.env.local
+
+# OS & IDE metadata
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

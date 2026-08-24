@@ -1,0 +1,51 @@
+# Nirantar Congestion Calendar
+# ==============================
+# Swappable YAML file — replace this file to update market/festival schedules
+# without ANY code changes.
+#
+# Format:
+#   districts:
+#     <district_id>:
+#       market_days:
+#         weekly: [list of weekday names, 0=Monday ... 6=Sunday]
+#         dates:  [list of specific YYYY-MM-DD dates]
+#       festival_days:
+#         dates:  [list of YYYY-MM-DD dates]
+#         recurring_monthly: [list of day-of-month integers]
+#
+# district_id must match district_id in config.OPERATING_DISTRICTS and GeoJSON properties.
+
+districts:
+  hill_tbd:
+    market_days:
+      # Weekly market typically on Wednesday and Saturday in NER hill districts
+      weekly: [2, 5]         # 2=Wednesday, 5=Saturday
+      dates:
+        - "2026-08-26"       # Sample specific market date
+        - "2026-09-02"
+    festival_days:
+      dates:
+        - "2026-09-05"       # Placeholder festival
+        - "2026-10-15"       # Placeholder festival
+        - "2026-11-01"       # State Day placeholder
+      recurring_monthly: []
+
+  valley_tbd:
+    market_days:
+      # Valley weekly market typically on Tuesday and Friday
+      weekly: [1, 4]         # 1=Tuesday, 4=Friday
+      dates:
+        - "2026-08-28"
+        - "2026-09-04"
+    festival_days:
+      dates:
+        - "2026-09-10"       # Placeholder valley festival
+        - "2026-10-20"       # Placeholder Durga Puja / local festival
+        - "2026-11-10"
+      recurring_monthly: []
+
+# Global festival days affecting all districts
+global_festival_days:
+  - "2026-08-15"   # Independence Day
+  - "2026-10-02"   # Gandhi Jayanti
+  - "2026-01-26"   # Republic Day

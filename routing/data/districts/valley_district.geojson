@@ -1,0 +1,108 @@
+{
+  "type": "FeatureCollection",
+  "name": "Nirantar Placeholder Road Network - Valley District",
+  "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "osmid": "v_e_1", "name": "NH-Valley-1", "highway": "primary",
+        "surface": "paved", "lanes": 2, "length_m": 15000,
+        "is_night_restricted": false, "is_chokepoint": false,
+        "district_id": "valley_tbd"
+      },
+      "geometry": { "type": "LineString", "coordinates": [[91.5, 26.0], [91.65, 26.05]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osmid": "v_e_2", "name": "Valley Road 2", "highway": "secondary",
+        "surface": "paved", "lanes": 2, "length_m": 10000,
+        "is_night_restricted": false, "is_chokepoint": false,
+        "district_id": "valley_tbd"
+      },
+      "geometry": { "type": "LineString", "coordinates": [[91.65, 26.05], [91.8, 26.1]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osmid": "v_e_3", "name": "Floodplain Track 3", "highway": "unclassified",
+        "surface": "unpaved", "lanes": 1, "length_m": 8000,
+        "is_night_restricted": true, "is_chokepoint": false,
+        "district_id": "valley_tbd"
+      },
+      "geometry": { "type": "LineString", "coordinates": [[91.65, 26.05], [91.72, 26.15]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osmid": "v_e_4", "name": "Bridge Crossing Beta", "highway": "secondary",
+        "surface": "paved", "lanes": 1, "length_m": 600,
+        "is_night_restricted": false, "is_chokepoint": true,
+        "is_single_lane_bridge": true,
+        "district_id": "valley_tbd"
+      },
+      "geometry": { "type": "LineString", "coordinates": [[91.72, 26.15], [91.75, 26.18]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osmid": "v_e_5", "name": "Valley Road 5", "highway": "tertiary",
+        "surface": "paved", "lanes": 2, "length_m": 9500,
+        "is_night_restricted": false, "is_chokepoint": false,
+        "district_id": "valley_tbd"
+      },
+      "geometry": { "type": "LineString", "coordinates": [[91.75, 26.18], [91.8, 26.1]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osmid": "v_e_6", "name": "Market Road 6", "highway": "secondary",
+        "surface": "paved", "lanes": 2, "length_m": 12000,
+        "is_night_restricted": false, "is_chokepoint": false,
+        "district_id": "valley_tbd"
+      },
+      "geometry": { "type": "LineString", "coordinates": [[91.8, 26.1], [91.95, 26.15]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osmid": "v_e_7", "name": "Bypass 7", "highway": "unclassified",
+        "surface": "gravel", "lanes": 1, "length_m": 16000,
+        "is_night_restricted": false, "is_chokepoint": false,
+        "district_id": "valley_tbd"
+      },
+      "geometry": { "type": "LineString", "coordinates": [[91.5, 26.0], [91.95, 26.15]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osmid": "v_e_8", "name": "Isolated Settlement Spur", "highway": "track",
+        "surface": "dirt", "lanes": 1, "length_m": 4500,
+        "is_night_restricted": true, "is_chokepoint": false,
+        "district_id": "valley_tbd"
+      },
+      "geometry": { "type": "LineString", "coordinates": [[91.75, 26.18], [91.77, 26.25]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osmid": "v_e_9", "name": "Valley Track 9", "highway": "tertiary",
+        "surface": "paved", "lanes": 2, "length_m": 11000,
+        "is_night_restricted": false, "is_chokepoint": false,
+        "district_id": "valley_tbd"
+      },
+      "geometry": { "type": "LineString", "coordinates": [[91.5, 26.0], [91.6, 26.12]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osmid": "v_e_10", "name": "Valley Track 10", "highway": "tertiary",
+        "surface": "paved", "lanes": 2, "length_m": 9000,
+        "is_night_restricted": false, "is_chokepoint": false,
+        "district_id": "valley_tbd"
+      },
+      "geometry": { "type": "LineString", "coordinates": [[91.6, 26.12], [91.65, 26.05]] }
+    }
+  ]
+}

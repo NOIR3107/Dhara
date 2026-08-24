@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DHARA — Smart Logistics &amp; Accessibility Intelligence Platform</title>
+  
+  <!-- Favicon Logo -->
+  <link rel="icon" type="image/png" href="logo.png">
+
+  <!-- Google Fonts: Plus Jakarta Sans, Outfit & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  
+  <!-- Chart.js CDN for Visual Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-layout">
+    
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar">
+      
+      <!-- Brand & Logo -->
+      <div class="sidebar-brand" id="brand-home-click" style="cursor: pointer;">
+        <img src="logo.png" alt="DHARA Logo" class="brand-logo-img">
+        <div class="brand-titles">
+          <div class="brand-name">DHARA</div>
+          <div class="brand-tagline">Smart Logistics &amp; Accessibility</div>
+        </div>
+      </div>
+
+      <!-- MAIN Navigation Section -->
+      <div class="nav-group">
+        <div class="nav-group-label">MAIN</div>
+        <nav class="sidebar-nav">
+          <a href="#/overview" class="nav-item active" data-view="overview">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span data-i18n="nav.overview">Overview</span>
+          </a>
+          <a href="#/decisions" class="nav-item" data-view="decisions">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            <span data-i18n="nav.todayDecisions">Today's Decisions</span>
+            <span class="badge-nav-count" id="nav-badge-decisions">3</span>
+          </a>
+          <a href="#/shipments" class="nav-item" data-view="shipments">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+            <span data-i18n="nav.shipments">Shipments &amp; Trucks</span>
+            <span class="badge-nav-count blue" id="nav-badge-shipments">4</span>
+          </a>
+          <a href="#/risks" class="nav-item" data-view="risks">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
+            <span data-i18n="nav.risks">Risks</span>
+          </a>
+          <a href="#/routes" class="nav-item" data-view="routes">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+            <span data-i18n="nav.routes">Routes</span>
+          </a>
+          <a href="#/fleet" class="nav-item" data-view="fleet">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+            <span data-i18n="nav.fleet">Fleet Telemetry</span>
+          </a>
+          <a href="#/depots" class="nav-item" data-view="depots">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+            <span data-i18n="nav.depots">Depots &amp; Hubs</span>
+          </a>
+          <a href="#/field-report" class="nav-item" id="btn-open-report">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            <span data-i18n="nav.fieldReport">Field Reports</span>
+          </a>
+          <a href="#/audit" class="nav-item" data-view="audit">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            <span data-i18n="nav.auditTrail">Audit Trail</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- INTELLIGENCE Navigation Section -->
+      <div class="nav-group">
+        <div class="nav-group-label">INTELLIGENCE</div>
+        <nav class="sidebar-nav">
+          <a href="#/copilot" class="nav-item" data-view="copilot">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span data-i18n="nav.copilot">DHARA Copilot</span>
+          </a>
+          <a href="#/track-record" class="nav-item" data-view="track-record">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span data-i18n="nav.trackRecord">Track Record</span>
+          </a>
+          <a href="#/scenarios" class="nav-item" data-view="scenarios">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            <span data-i18n="nav.scenarios">What-If Scenarios</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- PLANNING Navigation Section -->
+      <div class="nav-group">
+        <div class="nav-group-label">PLANNING</div>
+        <nav class="sidebar-nav">
+          <a href="#/planner" class="nav-item" data-view="planner">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+            <span data-i18n="nav.planner">Infrastructure Planner</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="sys-status-card">
+          <div class="sys-status-top">
+            <span class="pulse-green"></span>
+            <span class="sys-status-title">LIVE SYSTEM</span>
+          </div>
+          <div class="sys-status-sub" id="sidebar-status-sub">All systems operational</div>
+        </div>
+
+        <div class="user-profile-card">
+          <div class="user-avatar">SA</div>
+          <div class="user-info">
+            <div class="user-name">District Officer</div>
+            <div class="user-email">officer@dhara.gov.in</div>
+          </div>
+          <span class="user-arrow">▾</span>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- MAIN CONTENT VIEWPORT -->
+    <main class="main-content">
+      
+      <!-- TOP HEADER BAR -->
+      <header class="top-bar">
+        <div class="breadcrumb">
+          <img src="logo.png" alt="DHARA Logo" class="topbar-logo-img">
+          <span class="bc-parent">DHARA Platform</span> / <span class="bc-current" id="bc-title">Officer Command</span>
+        </div>
+
+        <!-- Provenance Pills -->
+        <div class="provenance-pills">
+          <span class="pill-prov real"><span class="dot green"></span> REAL DATA</span>
+          <span class="pill-prov derived"><span class="dot blue"></span> DERIVED ML</span>
+          <span class="pill-prov simulated"><span class="dot amber"></span> SIMULATED</span>
+        </div>
+
+        <!-- Right Controls -->
+        <div class="top-right-controls">
+          <div class="notification-btn" title="Live Alerts">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="notif-badge">2</span>
+          </div>
+
+          <div class="date-selector">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span id="top-date-display">24 Aug 2026</span>
+          </div>
+
+          <!-- Multilingual Global Selector -->
+          <div class="lang-selector">
+            <select id="lang-select" title="Language Selector">
+              <option value="en">English</option>
+              <option value="hi">हिंदी (Hindi)</option>
+              <option value="bn">বাংলা (Bengali)</option>
+              <option value="mni">মৈতৈলোন্ (Manipuri)</option>
+              <option value="as">অসমীয়া (Assamese)</option>
+            </select>
+          </div>
+
+          <a href="#/decisions" class="btn-primary-dark" id="btn-get-insights">
+            <span>Worklist →</span>
+          </a>
+        </div>
+      </header>
+
+      <!-- ROLE SELECTION ENTRY VIEW -->
+      <div class="dashboard-viewport hidden" id="view-entry">
+        <div class="entry-hero-banner">
+          <div class="ner-badge">MINISTRY OF DEVELOPMENT OF NORTH EASTERN REGION (MDoNER) — SIH26002</div>
+          <h1 class="entry-hero-title">DHARA Platform</h1>
+          <p class="entry-hero-sub">Smart Logistics &amp; Accessibility Intelligence Platform</p>
+        </div>
+
+        <div class="access-role-grid">
+          <div class="role-card primary">
+            <div class="role-icon">📊</div>
+            <h2>OFFICER DASHBOARD</h2>
+            <p>Monitor risks, routes, logistics, and make pre-positioning decisions today.</p>
+            <div class="role-tags">
+              <span>• Worklist First</span>
+              <span>• Cut-off Countdown</span>
+              <span>• Decision Audit</span>
+            </div>
+            <a href="#/overview" class="btn-role-action primary">Open Officer Dashboard &rarr;</a>
+          </div>
+
+          <div class="role-card secondary">
+            <div class="role-icon">📝</div>
+            <h2>FIELD INCIDENT REPORT</h2>
+            <p>Report ground-level incidents, landslides, and road blockages even with limited connectivity.</p>
+            <div class="role-tags">
+              <span>• GPS Auto-Location</span>
+              <span>• Offline PWA Sync</span>
+              <span>• Photo Evidence</span>
+            </div>
+            <button class="btn-role-action secondary" id="btn-entry-field-report">Submit Field Report &rarr;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- WORKLIST-FIRST OFFICER DASHBOARD VIEW -->
+      <div class="dashboard-viewport" id="view-overview">
+        
+        <!-- GREETING & WORKLIST HEADER -->
+        <section class="worklist-header-banner">
+          <div class="greeting-sub" data-i18n="dashboard.greeting">GOOD MORNING, OFFICER</div>
+          <h1 class="worklist-title" data-i18n="dashboard.todayTitle">TODAY'S DECISIONS</h1>
+          
+          <div class="worklist-summary-hero">
+            <span class="hero-alert-badge">ACTION REQUIRED</span>
+            <span class="hero-summary-text" id="worklist-hero-count" data-i18n="dashboard.heroCount">3 villages need a decision today</span>
+          </div>
+
+          <div class="worklist-filters-row">
+            <button class="filter-chip active" data-filter="all">All</button>
+            <button class="filter-chip" data-filter="critical">Critical</button>
+            <button class="filter-chip" data-filter="high-risk">High Risk</button>
+            <button class="filter-chip" data-filter="logistics">Logistics</button>
+            <button class="filter-chip" data-filter="cutoff-24">Cutoff &lt; 24h</button>
+            <button class="filter-chip" data-filter="cutoff-48">Cutoff &lt; 48h</button>
+          </div>
+        </section>
+
+        <!-- OPERATIONAL DECISION CARDS WORKLIST -->
+        <section class="decision-cards-worklist" id="decision-cards-container"></section>
+
+        <!-- INTERACTIVE ANALYTICAL GRAPHS GRID 1 (VRI TREND & DISTRICT BREAKDOWN) -->
+        <section class="analytics-charts-grid">
+          <div class="chart-box-card">
+            <div class="chart-card-header">
+              <span class="chart-icon">📈</span>
+              <h3>7-Day Horizon VRI Risk &amp; Rainfall Forecast Trend</h3>
+              <span class="pill-prov derived">DERIVED ML</span>
+            </div>
+            <div class="chart-canvas-wrapper">
+              <canvas id="chart-vri-trend"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-box-card">
+            <div class="chart-card-header">
+              <span class="chart-icon">📊</span>
+              <h3>District Risk Breakdown &amp; Cut-off Habitations</h3>
+              <span class="pill-prov real">REAL GADM</span>
+            </div>
+            <div class="chart-canvas-wrapper">
+              <canvas id="chart-district-breakdown"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- PERMANENT DHARA TRACK RECORD METER -->
+        <section class="track-record-permanent-card">
+          <div class="tr-top-row">
+            <div class="tr-title-group">
+              <span class="tr-icon">📈</span>
+              <div>
+                <h3>DHARA TRACK RECORD</h3>
+                <span class="tr-sub" id="tr-period">LAST 30 DAYS</span>
+              </div>
+            </div>
+            <a href="#/track-record" class="btn-text-link">VIEW TRACK RECORD &rarr;</a>
+          </div>
+
+          <div class="tr-metrics-grid">
+            <div class="tr-stat">
+              <span class="tr-num" id="tr-total-pred">14</span>
+              <span class="tr-lbl">Predictions</span>
+            </div>
+            <div class="tr-stat success">
+              <span class="tr-num" id="tr-confirmed-pred">11</span>
+              <span class="tr-lbl">Confirmed Correct</span>
+            </div>
+            <div class="tr-stat danger">
+              <span class="tr-num" id="tr-incorrect-pred">3</span>
+              <span class="tr-lbl">Incorrect</span>
+            </div>
+            <div class="tr-stat warning">
+              <span class="tr-num" id="tr-missed-pred">2</span>
+              <span class="tr-lbl">Closures Missed</span>
+            </div>
+            <div class="tr-stat accent">
+              <span class="tr-num" id="tr-hit-rate">78.6%</span>
+              <span class="tr-lbl">Hit Rate</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECONDARY COMMAND MAP SECTION -->
+        <section class="overview-split-grid">
+          <div class="card-box map-box">
+            <div class="card-box-header">
+              <div class="card-box-title">NORTH EAST ACCESSIBILITY COMMAND MAP (SECONDARY EVIDENCE)</div>
+            </div>
+            <div class="map-viewport-wrapper">
+              <div id="map"></div>
+              <img src="logo.png" alt="DHARA Logo Watermark" class="map-watermark-logo">
+              <div class="map-overlay-legend">
+                <span class="legend-dot green"></span> Low Risk
+                <span class="legend-dot amber"></span> Medium Risk
+                <span class="legend-dot red"></span> High Risk
+              </div>
+              <div class="map-timeline-scrubber">
+                <div class="scrubber-label" id="timeline-day-label">2026-08-24 (Day 1)</div>
+                <input type="range" id="forecast-slider" min="0" max="6" value="0" step="1">
+              </div>
+            </div>
+          </div>
+
+          <div class="card-box risks-box">
+            <div class="card-box-header">
+              <div class="card-box-title">ACTIVE CORRIDOR RISKS</div>
+              <a href="#/risks" class="btn-text-link">View All &rarr;</a>
+            </div>
+            <div class="risks-list" id="active-risks-container"></div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- SHIPMENTS & TRUCKS VIEW (ROUTE #/shipments) -->
+      <div class="dashboard-viewport hidden" id="view-shipments">
+        <div class="page-title-header">
+          <h2>🚛 Active Shipments &amp; Relief Truck Fleet</h2>
+          <p>Click on any truck license plate number to inspect its complete dispatch manifest, cargo, and live telemetry.</p>
+          <span class="pill-prov simulated">SIMULATED TELEMETRY</span>
+        </div>
+
+        <div class="shipments-cards-grid" id="shipments-cards-container"></div>
+      </div>
+
+      <!-- DEDICATED TRACK RECORD VIEW (ROUTE #/track-record) -->
+      <div class="dashboard-viewport hidden" id="view-track-record">
+        <div class="page-title-header">
+          <h2>📈 DHARA Prediction Track Record &amp; Historical Accuracy</h2>
+          <p>Transparent accuracy audit displaying predictions, confirmed hits, and missed closures without hiding failures.</p>
+          <span class="pill-prov derived">DEMO / HISTORICAL EVALUATION</span>
+        </div>
+
+        <div class="tr-detailed-grid">
+          <div class="card-box">
+            <h3>District-wise Accuracy Breakdown</h3>
+            <table class="dash-table" id="tr-district-table">
+              <thead>
+                <tr>
+                  <th>District</th>
+                  <th>Total Predictions</th>
+                  <th>Correct</th>
+                  <th>Hit Rate (%)</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="card-box">
+            <h3>30-Day Model Accuracy Trend</h3>
+            <div class="chart-canvas-wrapper" style="height:220px;">
+              <canvas id="chart-accuracy-trend"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-box" style="margin-top:16px;">
+          <h3>Recent Outcome Audit &amp; Missed Predictions</h3>
+          <div class="tr-outcomes-list" id="tr-outcomes-container"></div>
+        </div>
+      </div>
+
+      <!-- FLEET VIEW (ROUTE #/fleet) -->
+      <div class="dashboard-viewport hidden" id="view-fleet">
+        <div class="page-title-header">
+          <h2>🚚 Relief Fleet Telemetry</h2>
+          <p>Real-time vehicle status, location, speed, and GPS updates</p>
+          <span class="pill-prov simulated">SIMULATED TELEMETRY</span>
+        </div>
+
+        <div class="fleet-status-row">
+          <div class="fleet-kpi"><span class="fleet-num" id="fleet-tot">4</span><span class="fleet-lbl">Total Vehicles</span></div>
+          <div class="fleet-kpi green"><span class="fleet-num" id="fleet-avail">2</span><span class="fleet-lbl">🟢 AVAILABLE</span></div>
+          <div class="fleet-kpi blue"><span class="fleet-num" id="fleet-transit">2</span><span class="fleet-lbl">🔵 IN TRANSIT</span></div>
+          <div class="fleet-kpi amber"><span class="fleet-num" id="fleet-delayed">0</span><span class="fleet-lbl">🟠 DELAYED</span></div>
+          <div class="fleet-kpi red"><span class="fleet-num" id="fleet-offline">0</span><span class="fleet-lbl">🔴 OFFLINE</span></div>
+        </div>
+
+        <div class="fleet-cards-grid" id="fleet-cards-container"></div>
+      </div>
+
+      <!-- DEPOTS & HUBS VIEW (ROUTE #/depots) -->
+      <div class="dashboard-viewport hidden" id="view-depots">
+        <div class="page-title-header">
+          <h2>📦 Relief Depots &amp; Supply Hubs</h2>
+          <p>Regional inventory stocks, ration packs, medical kits, and assigned transport fleets</p>
+        </div>
+
+        <div class="depots-split-grid">
+          <div class="depots-cards-grid" id="depots-cards-container"></div>
+          <div class="card-box">
+            <h3>Depot Stock Inventory Distribution</h3>
+            <div class="chart-canvas-wrapper" style="height:240px;">
+              <canvas id="chart-depot-stocks"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROUTES VIEW (ROUTE #/routes) -->
+      <div class="dashboard-viewport hidden" id="view-routes">
+        <div class="page-title-header">
+          <h2>🛣️ Emergency &amp; Disaster-Time Accessibility Routes</h2>
+          <p>Monitored road corridors, slope profiles, closure probabilities, and alternate egress paths</p>
+        </div>
+        <div class="routes-cards-grid" id="routes-cards-container"></div>
+      </div>
+
+      <!-- AUDIT LOGS VIEW (ROUTE #/audit) -->
+      <div class="dashboard-viewport hidden" id="view-audit">
+        <div class="page-title-header">
+          <h2>🛡️ Autonomous Decisions &amp; Copilot Agent Audit Trail</h2>
+          <p>Verbatim plain-English reasoning logs generated by DHARA Module 7 Decision Engine</p>
+        </div>
+        <div class="audit-cards-grid" id="audit-cards-container"></div>
+      </div>
+
+      <!-- RISKS VIEW (ROUTE #/risks) -->
+      <div class="dashboard-viewport hidden" id="view-risks">
+        <div class="page-title-header">
+          <h2>⚠️ Live Disaster &amp; Corridor Risk Alerts</h2>
+          <p>Real-time notifications for blocked roads, inaccessible regions, and delivery delays</p>
+        </div>
+        <div class="alerts-list" id="alerts-list-container"></div>
+      </div>
+
+      <!-- DHARA COPILOT VIEW (ROUTE #/copilot) -->
+      <div class="dashboard-viewport hidden" id="view-copilot">
+        <div class="page-title-header">
+          <h2>🤖 DHARA Copilot Agent — Decision Explanation Layer</h2>
+          <p>Interactive decision-support query interface over backend predictions &amp; dispatches</p>
+        </div>
+
+        <div class="copilot-container">
+          <div class="copilot-suggested-row">
+            <span>Suggested Questions:</span>
+            <button class="copilot-btn-suggest" data-q="What needs action today?">"What needs action today?"</button>
+            <button class="copilot-btn-suggest" data-q="Why is Ukhrul high risk?">"Why is Ukhrul high risk?"</button>
+            <button class="copilot-btn-suggest" data-q="Which villages may lose access within 48 hours?">"Which villages may lose access within 48 hours?"</button>
+            <button class="copilot-btn-suggest" data-q="Why did DHARA recommend 12t rice?">"Why did DHARA recommend 12t rice?"</button>
+          </div>
+
+          <div class="copilot-chat-history" id="copilot-chat-box">
+            <div class="copilot-msg bot">
+              <img src="logo.png" alt="DHARA Logo" class="chat-avatar">
+              <div class="msg-bubble">Hello Officer. I am the DHARA Copilot Agent. I can explain risk predictions, cutoff countdowns, and automated pre-positioning decisions using verified PostGIS backend data. How can I assist your command today?</div>
+            </div>
+          </div>
+
+          <form id="copilot-form" class="copilot-input-row">
+            <input type="text" id="copilot-input" placeholder="Ask DHARA Copilot about accessibility predictions or decisions..." required>
+            <button type="submit" class="btn-submit">Ask Copilot</button>
+          </form>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- TRUCK / SHIPMENT MANIFEST MODAL -->
+  <div class="modal-overlay hidden" id="modal-shipment-detail">
+    <div class="modal-card wide">
+      <div class="modal-header">
+        <div class="modal-title-flex">
+          <img src="logo.png" alt="DHARA Logo" class="modal-logo-img">
+          <div>
+            <h3>Relief Truck Dispatch Manifest</h3>
+            <div class="modal-subtext" id="shipment-modal-sub">License Plate: <strong id="modal-lic-plate">AS-01-EC-4829</strong></div>
+          </div>
+        </div>
+        <button class="btn-close-modal" id="btn-close-shipment">&times;</button>
+      </div>
+      <div class="shipment-modal-body" id="shipment-modal-content"></div>
+      <div class="modal-footer">
+        <button class="btn-primary-dark" id="btn-shipment-close-foot">Close Manifest</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW EVIDENCE MODAL -->
+  <div class="modal-overlay hidden" id="modal-view-evidence">
+    <div class="modal-card wide">
+      <div class="modal-header">
+        <div class="modal-title-flex">
+          <img src="logo.png" alt="DHARA Logo" class="modal-logo-img">
+          <h3>Decision Evidence &amp; Risk Diagnostics</h3>
+        </div>
+        <button class="btn-close-modal" id="btn-close-evidence">&times;</button>
+      </div>
+      <div class="evidence-modal-body" id="evidence-modal-content"></div>
+      <div class="modal-footer">
+        <a href="#/overview" class="btn-primary-dark" id="btn-evidence-goto-map">VIEW MAP ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHANGE DECISION MODAL -->
+  <div class="modal-overlay hidden" id="modal-change-decision">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>✏️ Modify Pre-Positioning Decision</h3>
+        <button class="btn-close-modal" id="btn-close-change">&times;</button>
+      </div>
+      <form id="form-change-decision">
+        <input type="hidden" id="change-dec-id">
+        <div class="form-group">
+          <label>Relief Rations Quantity (Tonnes)</label>
+          <input type="number" id="change-quantity" value="12" required>
+        </div>
+        <div class="form-group">
+          <label>Source Depot</label>
+          <select id="change-depot">
+            <option value="depot_1">Depot A (Tawang Relief Hub)</option>
+            <option value="depot_2">Depot B (Kameng Regional Depot)</option>
+            <option value="depot_3">Depot C (Lohit Transit Hub)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Corridor Route</label>
+          <input type="text" id="change-route" value="NH-150 Kameng Corridor" required>
+        </div>
+        <div class="form-group">
+          <label>Delivery Deadline</label>
+          <input type="text" id="change-deadline" value="Within 24 Hours" required>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" id="btn-cancel-change">Cancel</button>
+          <button type="submit" class="btn-submit">Confirm Modifications</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- REJECT DECISION MODAL -->
+  <div class="modal-overlay hidden" id="modal-reject-decision">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🛑 Reject Recommendation — Reason Required</h3>
+        <button class="btn-close-modal" id="btn-close-reject">&times;</button>
+      </div>
+      <form id="form-reject-decision">
+        <input type="hidden" id="reject-dec-id">
+        <p class="modal-subtext">Why are you rejecting this automated recommendation?</p>
+        <div class="form-group">
+          <label>Primary Rejection Reason</label>
+          <select id="reject-reason-cat" required>
+            <option value="Road already reopened">Road already reopened</option>
+            <option value="Stock already available">Stock already available at target village</option>
+            <option value="Alternative route available">Alternative route available without delay</option>
+            <option value="Ground conditions are different">Ground conditions are different from model prediction</option>
+            <option value="Prediction appears incorrect">Prediction appears incorrect</option>
+            <option value="Other">Other reason</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Ground Observation Details (Optional)</label>
+          <textarea id="reject-free-text" rows="3" placeholder="Provide ground truth details for model evaluation and recalibration..."></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" id="btn-cancel-reject">Cancel</button>
+          <button type="submit" class="btn-submit danger">Confirm Rejection</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- FIELD REPORT MODAL -->
+  <div class="modal-overlay hidden" id="modal-field-report">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-flex">
+          <img src="logo.png" alt="DHARA Logo" class="modal-logo-img">
+          <h3>📝 Submit Disaster Field Incident Report</h3>
+        </div>
+        <button class="btn-close-modal" id="btn-close-report">&times;</button>
+      </div>
+      <form id="form-field-report">
+        <div class="form-group">
+          <label>Reporter Name &amp; Designation</label>
+          <input type="text" id="rep-name" placeholder="e.g. Inspector T. Sharma (NDRF Tawang)" required>
+        </div>
+        <div class="form-group">
+          <label>Location / Corridor</label>
+          <input type="text" id="rep-location" placeholder="e.g. NH-150 Km 42 (Kameng Sector)" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Incident Type</label>
+            <select id="rep-type">
+              <option value="Landslide">Landslide / Debris Blockage</option>
+              <option value="Flood">Flash Flood / Road Submersion</option>
+              <option value="Bridge Damage">Bridge Structural Damage</option>
+              <option value="Road Blockage">Vehicle / Debris Obstruction</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Severity</label>
+            <select id="rep-severity">
+              <option value="CRITICAL">CRITICAL — Road Severed</option>
+              <option value="HIGH">HIGH — Single-lane Traffic Only</option>
+              <option value="MEDIUM">MEDIUM — Impending Failure</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description &amp; Observed Conditions</label>
+          <textarea id="rep-desc" rows="3" placeholder="Provide ground truth observations for model validation..." required></textarea>
+        </div>
+        
+        <div class="offline-sync-badge" id="field-offline-status">
+          <span class="dot green"></span> Connected — Direct Sync Active
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" id="btn-cancel-report">Cancel</button>
+          <button type="submit" class="btn-submit">Submit Field Report</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- App JS -->
+  <script src="app.js"></script>
+</body>
+</html>
