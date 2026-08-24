@@ -50,6 +50,8 @@ let currentLang = localStorage.getItem("dhara_lang") || "en";
 let map = null;
 let villageMarkers = {};
 let segmentPolylines = [];
+let depotMarkers = [];
+let connectionLines = [];
 let dbPromise = null;
 
 // Chart Instances
@@ -158,14 +160,15 @@ function initMap() {
 
   map = L.map("map", {
     center: [27.18, 94.12],
-    zoom: 7.5,
+    zoom: 8,
     zoomControl: false,
     attributionControl: false,
   });
 
   L.control.zoom({ position: "topright" }).addTo(map);
 
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+  // CartoDB Dark Matter Basemap (Matches exact dark aesthetic in user's image)
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
     maxZoom: 18,
     subdomains: "abcd",
   }).addTo(map);
@@ -776,32 +779,98 @@ function renderMapLayers() {
   if (!map) return;
   Object.values(villageMarkers).forEach((m) => map.removeLayer(m));
   segmentPolylines.forEach((l) => map.removeLayer(l));
+  depotMarkers.forEach((d) => map.removeLayer(d));
+  connectionLines.forEach((c) => map.removeLayer(c));
 
   villageMarkers = {};
   segmentPolylines = [];
+  depotMarkers = [];
+  connectionLines = [];
 
+  // Render At-Risk Road Segments
   atRiskSegmentsData.forEach((seg) => {
     const coords = seg.geometry.coordinates.map((c) => [c[1], c[0]]);
     const prob = seg.properties.closure_probability;
-    const color = prob >= 0.35 ? "#d9383a" : prob >= 0.25 ? "#d97706" : "#2563eb";
+    const color = prob >= 0.35 ? "#ff2a5f" : prob >= 0.25 ? "#ffb703" : "#00a8ff";
 
-    const poly = L.polyline(coords, { color, weight: prob >= 0.35 ? 4 : 2, opacity: 0.85 }).addTo(map);
+    const poly = L.polyline(coords, {
+      color,
+      weight: prob >= 0.35 ? 4 : 2.5,
+      opacity: 0.85,
+      dashArray: prob >= 0.35 ? '6, 6' : null
+    }).addTo(map);
     segmentPolylines.push(poly);
   });
 
+  // Render District Supply Depots (Glowing Blue Square Badges with 🏢 icon)
+  const sampleDepots = [
+    { id: "DEP_1", name: "Panigaon Central Hub", lat: 27.23, lon: 94.10 },
+    { id: "DEP_2", name: "Niz Lakuk Depot", lat: 27.05, lon: 93.85 },
+  ];
+
+  sampleDepots.forEach((dep) => {
+    const icon = L.divIcon({
+      className: "marker-glow-container",
+      html: `<div class="marker-depot" title="${dep.name}">🏢</div>`,
+      iconSize: [26, 26],
+      iconAnchor: [13, 13]
+    });
+
+    const m = L.marker([dep.lat, dep.lon], { icon }).addTo(map);
+    m.bindPopup(`
+      <div style="font-family:'Plus Jakarta Sans',sans-serif; padding:4px;">
+        <strong style="color:#00a8ff; font-size:0.95rem;">${dep.name}</strong><br>
+        <span style="font-size:0.75rem; color:#64748b;">District Supply &amp; Pre-Positioning Hub</span>
+      </div>
+    `);
+    depotMarkers.push(m);
+  });
+
+  // Render Habitations (Glowing Neon Circles matching image)
   habitationsData.forEach((h) => {
     const p = h.properties;
-    const color = p.vri < 30 ? "#d9383a" : p.vri < 70 ? "#d97706" : "#059669";
+    const lat = h.geometry.coordinates[1];
+    const lon = h.geometry.coordinates[0];
 
-    const marker = L.circleMarker([h.geometry.coordinates[1], h.geometry.coordinates[0]], {
-      radius: 5, fillColor: color, color: "#ffffff", weight: 1.5, fillOpacity: 0.9,
-    }).addTo(map);
+    let iconHtml = '';
+    if (p.vri < 30) {
+      iconHtml = `<div class="marker-cutoff" title="${p.name} (Cut-Off / Severe Risk)"><div class="marker-cutoff-core"></div></div>`;
+    } else if (p.vri < 70) {
+      iconHtml = `<div class="marker-moderate" title="${p.name} (Moderate Risk)"><div class="marker-moderate-core"></div></div>`;
+    } else {
+      iconHtml = `<div class="marker-high" title="${p.name} (High Reachability)"><div class="marker-high-core"></div></div>`;
+    }
+
+    const icon = L.divIcon({
+      className: "marker-glow-container",
+      html: iconHtml,
+      iconSize: [22, 22],
+      iconAnchor: [11, 11]
+    });
+
+    const marker = L.marker([lat, lon], { icon }).addTo(map);
+
+    // Draw connecting dotted network line from nearest depot to village
+    if (sampleDepots.length > 0) {
+      const nearestDep = sampleDepots[0];
+      const conn = L.polyline([[nearestDep.lat, nearestDep.lon], [lat, lon]], {
+        color: '#00a8ff',
+        weight: 1.5,
+        opacity: 0.4,
+        dashArray: '3, 6'
+      }).addTo(map);
+      connectionLines.push(conn);
+    }
+
+    const statusText = p.vri < 30 ? "Cut-Off / Severe Risk (VRI < 30)" : p.vri < 70 ? "Moderate Risk (30 ≤ VRI < 70)" : "High Reachability (VRI ≥ 70)";
+    const color = p.vri < 30 ? "#ff2a5f" : p.vri < 70 ? "#ffb703" : "#00f098";
 
     marker.bindPopup(`
       <div style="font-family:'Plus Jakarta Sans',sans-serif; padding:4px;">
-        <strong style="color:#1c1a17;">${p.name}</strong><br>
-        VRI: <strong style="color:${color}">${p.vri}</strong> / 100<br>
-        District: ${p.district_id}
+        <strong style="color:#1c1a17; font-size:0.95rem;">${p.name}</strong><br>
+        VRI Index: <strong style="color:${color}">${p.vri} / 100</strong><br>
+        Status: <strong style="color:${color}">${statusText}</strong><br>
+        District: ${p.district_id || 'North Lakhimpur'}
       </div>
     `);
 
@@ -812,6 +881,14 @@ function renderMapLayers() {
 function bindEvents() {
   const brandHome = document.getElementById("brand-home-click");
   if (brandHome) brandHome.addEventListener("click", () => { window.location.hash = "#/entry"; });
+
+  const dayChips = document.querySelectorAll(".forecast-day-chip");
+  dayChips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      dayChips.forEach((c) => c.classList.remove("active"));
+      chip.classList.add("active");
+    });
+  });
 
   const entryBtn = document.getElementById("btn-entry-field-report");
   if (entryBtn) entryBtn.addEventListener("click", () => {

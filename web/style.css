@@ -293,18 +293,86 @@ body {
 .card-box-header { display: flex; justify-content: space-between; align-items: center; }
 .card-box-title { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; color: var(--text-primary); }
 
-.map-viewport-wrapper { position: relative; height: 340px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-subtle); }
-#map { width: 100%; height: 100%; background: #e5dec9; }
-.map-watermark-logo { position: absolute; top: 12px; right: 12px; height: 48px; width: 48px; object-fit: contain; opacity: 0.4; z-index: 500; pointer-events: none; }
+.map-viewport-wrapper {
+  position: relative; height: 520px; border-radius: 18px; overflow: hidden;
+  border: 1px solid #1e293b; background: #0b0e14; box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+}
+#map { width: 100%; height: 100%; background: #0b0e14; }
+.map-watermark-logo { position: absolute; top: 16px; right: 16px; height: 48px; width: 48px; object-fit: contain; opacity: 0.35; z-index: 500; pointer-events: none; }
 
-.map-overlay-legend { position: absolute; bottom: 12px; left: 12px; background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(6px); padding: 7px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: var(--text-primary); display: flex; gap: 14px; z-index: 500; border: 1px solid var(--border-card); }
-.legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-.legend-dot.green { background: var(--color-green); }
-.legend-dot.amber { background: var(--color-amber); }
-.legend-dot.red { background: var(--color-red); }
+/* Dark VRI Legend Overlay (Top Left Floating Box) */
+.map-vri-legend {
+  position: absolute; top: 16px; left: 16px; z-index: 500;
+  background: rgba(13, 20, 36, 0.88); backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 14px;
+  padding: 18px 22px; display: flex; flex-direction: column; gap: 12px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6); color: #f8fafc; pointer-events: auto;
+}
+.map-vri-legend .legend-header {
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; color: #94a3b8; text-transform: uppercase;
+}
+.map-vri-legend .legend-item {
+  display: flex; align-items: center; gap: 12px; font-size: 0.84rem; font-weight: 600; color: #e2e8f0;
+}
 
-.map-timeline-scrubber { position: absolute; bottom: 12px; right: 12px; background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(6px); padding: 7px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; z-index: 500; border: 1px solid var(--border-card); display: flex; flex-direction: column; gap: 5px; }
-.scrubber-label { font-size: 0.7rem; color: var(--text-muted); }
+.legend-marker-dot { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; }
+.legend-marker-dot.green-glow { background: #00f098; border: 2px solid #ffffff; box-shadow: 0 0 12px #00f098; }
+.legend-marker-dot.amber-glow { background: #ffb703; border: 2px solid #ffffff; box-shadow: 0 0 12px #ffb703; }
+.legend-marker-dot.red-glow { background: #ff2a5f; border: 2px solid #ffffff; box-shadow: 0 0 14px #ff2a5f; animation: pulseGlowPink 2s infinite; }
+.legend-marker-dot.blue-depot-square { width: 22px; height: 22px; background: #00a8ff; border: 2px solid #ffffff; border-radius: 6px; box-shadow: 0 0 14px #00a8ff; font-size: 12px; }
+
+/* Bottom Floating Forecast Horizon Bar */
+.map-forecast-bar {
+  position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 500;
+  background: rgba(13, 20, 36, 0.88); backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px;
+  padding: 10px 22px; display: flex; align-items: center; gap: 20px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6); color: #f8fafc; pointer-events: auto; max-width: 92%;
+}
+.forecast-bar-label { font-size: 0.74rem; font-weight: 800; letter-spacing: 0.08em; color: #94a3b8; white-space: nowrap; }
+.forecast-day-chips { display: flex; gap: 8px; align-items: center; overflow-x: auto; }
+.forecast-day-chip {
+  background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8; padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 700;
+  cursor: pointer; transition: all 0.15s ease; white-space: nowrap;
+}
+.forecast-day-chip:hover { background: rgba(255, 255, 255, 0.15); color: #ffffff; }
+.forecast-day-chip.active {
+  background: rgba(0, 168, 255, 0.2); border-color: #00a8ff; color: #00a8ff; box-shadow: 0 0 12px rgba(0, 168, 255, 0.4);
+}
+
+/* CUSTOM NEON GLOW MAP MARKERS */
+.marker-glow-container { background: transparent; border: none; }
+.marker-cutoff {
+  width: 22px; height: 22px; background: rgba(255, 42, 95, 0.25); border: 2.5px solid #ff2a5f;
+  border-radius: 50%; box-shadow: 0 0 16px #ff2a5f, inset 0 0 8px #ff2a5f;
+  display: flex; align-items: center; justify-content: center; animation: pulseGlowPink 2s infinite;
+}
+.marker-cutoff-core { width: 8px; height: 8px; background: #ffffff; border-radius: 50%; box-shadow: 0 0 8px #ffffff; }
+
+.marker-moderate {
+  width: 18px; height: 18px; background: #ffb703; border: 2.5px solid #ffffff;
+  border-radius: 50%; box-shadow: 0 0 14px #ffb703; display: flex; align-items: center; justify-content: center;
+}
+.marker-moderate-core { width: 6px; height: 6px; background: #1c1a17; border-radius: 50%; }
+
+.marker-high {
+  width: 18px; height: 18px; background: #00f098; border: 2.5px solid #ffffff;
+  border-radius: 50%; box-shadow: 0 0 14px #00f098; display: flex; align-items: center; justify-content: center;
+}
+.marker-high-core { width: 6px; height: 6px; background: #053b27; border-radius: 50%; }
+
+.marker-depot {
+  width: 26px; height: 26px; background: #00a8ff; border: 2px solid #ffffff;
+  border-radius: 8px; box-shadow: 0 0 18px #00a8ff; display: flex; align-items: center; justify-content: center;
+  color: #ffffff; font-size: 13px; font-weight: bold;
+}
+
+@keyframes pulseGlowPink {
+  0% { box-shadow: 0 0 12px #ff2a5f, inset 0 0 6px #ff2a5f; transform: scale(1); }
+  50% { box-shadow: 0 0 24px #ff2a5f, 0 0 35px rgba(255, 42, 95, 0.6), inset 0 0 12px #ff2a5f; transform: scale(1.15); }
+  100% { box-shadow: 0 0 12px #ff2a5f, inset 0 0 6px #ff2a5f; transform: scale(1); }
+}
 
 .risks-list { display: flex; flex-direction: column; gap: 12px; }
 .risk-item-card { background: var(--bg-page); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
