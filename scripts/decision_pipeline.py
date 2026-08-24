@@ -39,8 +39,10 @@ sys.path.insert(0, str(ROOT_DIR / "routing"))
 # Model imports
 import config as routing_config
 from closure_prediction import predict_closure_probability, train_and_evaluate
+# pyrefly: ignore [missing-import]
 from confidence import compute_district_confidence
 from vri import compute_vri, build_future_feature_rows
+# pyrefly: ignore [missing-import]
 from countdown import compute_countdown
 from egress import compute_egress
 from prepositioning import generate_dispatch_plan
