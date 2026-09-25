@@ -123,6 +123,59 @@ class TestProbabilityAdjustment:
         )
 
 
+class TestSeverityAwareBoost:
+    """
+    field_report_nlp.py classifies the officer's free-text notes into a
+    hazard severity, and get_adjusted_probability() should look up a
+    severity-specific boost instead of always using the flat
+    FIELD_REPORT_BLOCKED_BOOST — see config.FIELD_REPORT_SEVERITY_BOOST.
+    """
+
+    def test_no_notes_falls_back_to_flat_boost(self, store):
+        """A report with no notes has severity 'none', which maps to the
+        original flat FIELD_REPORT_BLOCKED_BOOST — unchanged behavior."""
+        r = FieldReport(officer_id="o1", edge_id="e_no_notes", status="blocked", district="test")
+        store.ingest(r, base_closure_prob=0.5)
+        adjusted = store.get_adjusted_probability("e_no_notes", 0.5)
+        expected = min(0.5 + config.FIELD_REPORT_BLOCKED_BOOST, 1.0)
+        assert adjusted == pytest.approx(expected, abs=0.01)
+
+    def test_impassable_note_boosts_more_than_flat_default(self, store):
+        r = FieldReport(
+            officer_id="o1", edge_id="e_impassable", status="blocked", district="test",
+            notes="Landslide near km 12, road fully buried under debris, no vehicle can pass",
+        )
+        assert r.hazard_type == "landslide"
+        assert r.severity == "impassable"
+        store.ingest(r, base_closure_prob=0.5)
+        adjusted = store.get_adjusted_probability("e_impassable", 0.5)
+        expected = min(0.5 + config.FIELD_REPORT_SEVERITY_BOOST["impassable"], 1.0)
+        assert adjusted == pytest.approx(expected, abs=0.01)
+        assert config.FIELD_REPORT_SEVERITY_BOOST["impassable"] > config.FIELD_REPORT_BLOCKED_BOOST
+
+    def test_minor_note_boosts_less_than_flat_default(self, store):
+        r = FieldReport(
+            officer_id="o1", edge_id="e_minor", status="blocked", district="test",
+            notes="Small branches down after wind, cleared easily by passing vehicles",
+        )
+        assert r.severity == "minor"
+        store.ingest(r, base_closure_prob=0.5)
+        adjusted = store.get_adjusted_probability("e_minor", 0.5)
+        expected = min(0.5 + config.FIELD_REPORT_SEVERITY_BOOST["minor"], 1.0)
+        assert adjusted == pytest.approx(expected, abs=0.01)
+        assert config.FIELD_REPORT_SEVERITY_BOOST["minor"] < config.FIELD_REPORT_BLOCKED_BOOST
+
+    def test_reasoning_mentions_nlp_classification(self, store):
+        r = FieldReport(
+            officer_id="o1", edge_id="e_reason", status="blocked", district="test",
+            notes="Bridge deck washed away in flash flood, route completely severed",
+        )
+        result = store.ingest(r, base_closure_prob=0.5)
+        assert "washout" in result["reasoning"]
+        assert result["hazard_type"] == "washout"
+        assert result["severity"] == "impassable"
+
+
 class TestConflictDetection:
     """
     CRITICAL: Conflicting reports must lower confidence and flag for human review.

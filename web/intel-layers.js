@@ -577,9 +577,10 @@
   function onPopupOpen(e) {
     const source = e.popup._source;
     if (!source) return;
-    // Collapse the panel so it never hides the popup on the small map.
+    // Collapse the panel so it never hides the popup on a small map
+    // (a wide map has room for both).
     const panel = document.querySelector(".intel-panel");
-    if (panel) panel.classList.add("collapsed");
+    if (panel && state.map && state.map.getSize().x < 700) panel.classList.add("collapsed");
     if (source.getLatLng && mapLayers.habitations && mapLayers.habitations.hasLayer(source)) {
       enrichHabitationPopup(e.popup, source);
     } else if (source.feature && source.feature.properties && "closure_probability" in source.feature.properties) {
@@ -618,6 +619,7 @@
 
   function focusResult(r) {
     const m = state.map;
+    if (!m) return;
     m.flyTo(r.ll, Math.max(m.getZoom(), 11), { duration: 0.8 });
     m.once("moveend", () => {
       const group = mapLayers[r.layer];
@@ -915,5 +917,12 @@
     }
   }
 
-  window.DharaIntel = { attach };
+  // Open or close the hazard intel panel (used by the Live Map toolbar).
+  function togglePanel() {
+    const toggle = document.querySelector(".intel-panel:not(.ops-panel) .intel-toggle");
+    if (toggle) toggle.click();
+  }
+
+  // search/focus are shared with the dashboard's Ctrl+K quick search.
+  window.DharaIntel = { attach, togglePanel, search: searchIndex, focus: focusResult };
 })();

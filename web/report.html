@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#312622">
+<script>
+  (function () {
+    var theme = null;
+    try { theme = localStorage.getItem("dhara-theme"); } catch (e) {}
+    if (theme !== "light" && theme !== "dark") {
+      theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<title>DHARA road photo report</title>
+<meta name="description" content="Drivers and field staff: send photos of a blocked or damaged road to the DHARA control room. Works without signal.">
+<link rel="icon" type="image/png" href="/dhara-logo.png">
+<!-- Built from web-ui/ (npm run build); bump ?v= after rebuilding -->
+<link rel="stylesheet" href="/ui/assets/style.css?v=1">
+</head>
+<body>
+<noscript><p style="padding:16px">This page needs JavaScript. Call your control room to report the road instead.</p></noscript>
+<div id="report-root"></div>
+<script type="module" src="/ui/assets/report.js?v=1"></script>
+</body>
+</html>

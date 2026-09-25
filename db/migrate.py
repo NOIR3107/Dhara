@@ -215,6 +215,28 @@ TABLES_DDL = [
     );
     """,
     "CREATE INDEX IF NOT EXISTS map_annotations_geom_idx ON map_annotations USING GIST (geom);",
+    # 20. Driver photo reports (files on disk in api/uploads/field-photos/)
+    """
+    CREATE TABLE IF NOT EXISTS field_photo_reports (
+        id SERIAL PRIMARY KEY,
+        client_ref UUID UNIQUE NOT NULL,
+        reporter_name VARCHAR(60) NOT NULL,
+        vehicle_id VARCHAR(20),
+        incident_type VARCHAR(20) NOT NULL,
+        passability VARCHAR(20) NOT NULL,
+        vehicles_stuck VARCHAR(10) NOT NULL DEFAULT 'none',
+        note TEXT,
+        landmark VARCHAR(120),
+        geom GEOMETRY(Point, 4326),
+        accuracy_m FLOAT,
+        captured_at TIMESTAMPTZ,
+        received_at TIMESTAMPTZ DEFAULT NOW(),
+        photos JSONB NOT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'UNVERIFIED',
+        data_provenance VARCHAR(20) NOT NULL DEFAULT 'REAL'
+    );
+    """,
+    "CREATE INDEX IF NOT EXISTS field_photo_reports_geom_idx ON field_photo_reports USING GIST (geom);",
 ]
 
 def apply_schema():

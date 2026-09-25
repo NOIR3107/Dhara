@@ -156,6 +156,62 @@ FIELD_REPORT_CLEAR_REDUCTION = 0.10
 # Confidence penalty applied when conflicting reports are detected
 FIELD_REPORT_CONFLICT_CONFIDENCE_PENALTY = 0.20
 
+# Severity-aware boost for "blocked" reports, keyed by the hazard severity
+# extracted from the officer's free-text notes by field_report_nlp.py.
+# "none" (no notes, or notes too short to classify) intentionally maps to
+# the same value as the old flat FIELD_REPORT_BLOCKED_BOOST so behavior for
+# reports with no notes is unchanged. "unknown" covers a missing/untrained
+# model file — same safe default.
+FIELD_REPORT_SEVERITY_BOOST = {
+    "impassable": 0.35,
+    "major":      0.20,
+    "minor":      0.08,
+    "none":       FIELD_REPORT_BLOCKED_BOOST,
+    "unknown":    FIELD_REPORT_BLOCKED_BOOST,
+}
+
+# ---------------------------------------------------------------------------
+# LLM REASONING (optional, offline-first)
+# ---------------------------------------------------------------------------
+# reasoning.py's build_*_reasoning() functions remain deterministic templates
+# ALWAYS — they are the audit-log source of truth and never call an LLM.
+# When enabled, llm_backend.py additionally asks a LOCAL Ollama server to
+# rephrase an already-computed reasoning string into a short plain-language
+# briefing for a field officer. This is a separate, optional, human-facing
+# string — never used for the audit log and never able to change a decision.
+#
+# Offline guarantee: no internet access is required at runtime (only once,
+# to pull the model). If the local server isn't running — e.g. a
+# disconnected depot terminal — every call fails fast and silently, and
+# callers fall back to the deterministic reasoning string unchanged.
+# reasoning.explain_for_officer() is deliberately NOT called from the
+# automation.py / field_reports.py hot paths — decide_action() and
+# ReportStore.ingest() must stay fast and fully deterministic. Measured on
+# CPU-only hardware, even a warm llama3.2:1b call takes ~8-12s (there's no
+# GPU to accelerate it here); a cold call (model not yet loaded) can take
+# ~20s. That's fine for an on-demand "explain this one decision in plain
+# language" call a human triggers, but far too slow to run on every
+# automation decision or every field report in a pipeline sweep. Callers
+# that DO invoke it should do so sparingly, by design.
+# "127.0.0.1" rather than "localhost" deliberately — on machines where
+# "localhost" resolves to the IPv6 loopback (::1) first (common on Windows),
+# an Ollama server bound only to IPv4 makes that first connection attempt
+# hang until it times out before falling back to IPv4, which can burn the
+# entire LLM_TIMEOUT_SECONDS budget on name resolution alone. Skip the
+# ambiguity entirely.
+REASONING_LLM_ENABLED = True
+OLLAMA_HOST = "http://127.0.0.1:11434"
+OLLAMA_MODEL = "llama3.2:1b"
+# The dashboard shows a template explanation instantly and only adds the LLM
+# rewording underneath, so a longer wait here never blocks the officer.
+LLM_TIMEOUT_SECONDS = 30
+
+# How long Ollama keeps the model in memory after a request. Ollama's default
+# (5 minutes) means the first briefing after a quiet spell pays a ~20s reload,
+# which exceeds LLM_TIMEOUT_SECONDS. web/server.py also preloads the model at
+# startup (llm_backend.warm_up) for the same reason.
+OLLAMA_KEEP_ALIVE = "12h"
+
 # ---------------------------------------------------------------------------
 # UPDATE CYCLE
 # Defines the cadence at which the system processes new data and re-evaluates.

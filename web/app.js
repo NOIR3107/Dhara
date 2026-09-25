@@ -4,7 +4,10 @@
  * Fully Interactive: Worklist Decisions, Mobile Field App, Offline Sync, 6-Language i18n, Real PostGIS Backend
  */
 
-const API_BASE = "http://localhost:3001";
+// Same machine that served this page, so operators on the local network reach the server, not their own device.
+const API_BASE = `http://${window.location.hostname || "localhost"}:3001`;
+// Offline AI endpoints live on the web server itself (web/server.py).
+const AI_BASE = window.location.protocol.startsWith("http") ? "" : "http://localhost:8080";
 
 // ====================================================
 // MULTILINGUAL i18n DICTIONARY (6 LANGUAGES)
@@ -22,6 +25,7 @@ const I18N = {
     },
     nav: {
       overview: "Overview",
+      map: "Live Map",
       todayDecisions: "Today's Decisions",
       shipments: "Shipments & Manifests",
       risks: "Corridor Risks & Alerts",
@@ -37,7 +41,7 @@ const I18N = {
     },
     dashboard: {
       greeting: "GOOD MORNING, OFFICER",
-      todayTitle: "TODAY'S DECISIONS",
+      todayTitle: "Today's decisions",
       heroCount: "3 villages need a decision today"
     },
     field: {
@@ -52,7 +56,7 @@ const I18N = {
       severityLabel: "Severity *",
       descLabel: "Description & Observed Conditions *",
       photoLabel: "Photo / Visual Evidence",
-      submitBtn: "📤 SUBMIT REPORT TO DHARA"
+      submitBtn: "SUBMIT REPORT TO DHARA"
     },
     actions: {
       approve: "APPROVE",
@@ -74,6 +78,7 @@ const I18N = {
     },
     nav: {
       overview: "अवलोकन",
+      map: "लाइव मानचित्र",
       todayDecisions: "आज के निर्णय",
       shipments: "शिपमेंट और मैनिफेस्ट",
       risks: "कॉरिडोर जोखिम व अलर्ट",
@@ -104,7 +109,7 @@ const I18N = {
       severityLabel: "गंभीरता *",
       descLabel: "विवरण और देखी गई स्थिति *",
       photoLabel: "फोटो / दृश्य साक्ष्य",
-      submitBtn: "📤 धारा में रिपोर्ट जमा करें"
+      submitBtn: "धारा में रिपोर्ट जमा करें"
     },
     actions: {
       approve: "स्वीकार करें",
@@ -126,6 +131,7 @@ const I18N = {
     },
     nav: {
       overview: "অৱলোকন",
+      map: "লাইভ মানচিত্ৰ",
       todayDecisions: "আজৰি সিদ্ধান্ত",
       shipments: "শ্বিপমেণ্ট আৰু মেনীফেষ্ট",
       risks: "বিপদ আৰু সতৰ্কবাৰ্তা",
@@ -156,7 +162,7 @@ const I18N = {
       severityLabel: "গুৰুত্ব *",
       descLabel: "বিৱৰণ আৰু পৰিস্থিতি *",
       photoLabel: "ফটো / প্ৰমাণ",
-      submitBtn: "📤 ধাৰালৈ প্ৰতিবেদন জমা দিয়ক"
+      submitBtn: "ধাৰালৈ প্ৰতিবেদন জমা দিয়ক"
     },
     actions: {
       approve: "অনুমোদন কৰক",
@@ -178,6 +184,7 @@ const I18N = {
     },
     nav: {
       overview: "সংক্ষিপ্ত বিবরণ",
+      map: "লাইভ মানচিত্র",
       todayDecisions: "আজকের সিদ্ধান্ত",
       shipments: "শিপমেন্ট ও মেনিফেস্ট",
       risks: "ঝুঁকি ও সতর্কতা",
@@ -208,7 +215,7 @@ const I18N = {
       severityLabel: "তীব্রতা *",
       descLabel: "বিবরণ ও পরিস্থিতি *",
       photoLabel: "ছবি / ভিজ্যুয়াল প্রমাণ",
-      submitBtn: "📤 ধারা সিস্টেমে রিপোর্ট জমা দিন"
+      submitBtn: "ধারা সিস্টেমে রিপোর্ট জমা দিন"
     },
     actions: {
       approve: "অনুমোদন করুন",
@@ -230,6 +237,7 @@ const I18N = {
     },
     nav: {
       overview: "ওভরভিউ",
+      map: "লাইভ মেপ",
       todayDecisions: "ঙসিগী ৱারেপশিং",
       shipments: "শিপমেন্ত অমশুং ত্রাক",
       risks: "খুদোংথিবা অমশুং চেক্সিনৱা",
@@ -260,7 +268,7 @@ const I18N = {
       severityLabel: "অকনবা ফিবম *",
       descLabel: "অকুপ্পা মরোল *",
       photoLabel: "ফোটো / খুদম",
-      submitBtn: "📤 ধারা দ রিফোর্ত পীবিয়ু"
+      submitBtn: "ধারা দ রিফোর্ত পীবিয়ু"
     },
     actions: {
       approve: "য়াবিয়ু",
@@ -282,6 +290,7 @@ const I18N = {
     },
     nav: {
       overview: "गुवारै नायनाय",
+      map: "लाइभ मेप",
       todayDecisions: "दिनैनि थांखिफोर",
       shipments: "मुवा राननाय आरो गारि",
       risks: "गिख्रोंथाव खौरां",
@@ -312,7 +321,7 @@ const I18N = {
       severityLabel: "गिख्रोंथाव बिथांखि *",
       descLabel: "गुवारै खौरां *",
       photoLabel: "फटो / फोरमान",
-      submitBtn: "📤 धारायाव रादाब थिसन"
+      submitBtn: "धारायाव रादाब थिसन"
     },
     actions: {
       approve: "गनायनाय",
@@ -321,8 +330,224 @@ const I18N = {
       viewEvidence: "फोरमान नाय",
       viewRoute: "लामा नाय"
     }
+  },
+  ne: {
+    entry: {
+      tagline: "अवरोधको पूर्वानुमान। पहुँचको सुरक्षा। राहत सामग्रीको अग्रिम भण्डारण।",
+      officerTitle: "अधिकारी ड्यासबोर्ड",
+      officerDesc: "अनुमानित अवरोध, गाउँको पहुँच, सामग्री ढुवानी, सवारी साधन, सूचना र निर्णयहरूको अनुगमन गर्नुहोस्।",
+      fieldTitle: "फिल्ड घटना रिपोर्ट",
+      fieldDesc: "फिल्डबाट पहिरो, सडक अवरोध, बाढी वा अन्य अवरोधको रिपोर्ट गर्नुहोस्।",
+      openOfficer: "अधिकारी ड्यासबोर्ड खोल्नुहोस् →",
+      openField: "फिल्ड रिपोर्टिङ एप खोल्नुहोस् →"
+    },
+    nav: {
+      overview: "सारांश",
+      map: "प्रत्यक्ष नक्सा",
+      todayDecisions: "आजका निर्णयहरू",
+      shipments: "ढुवानी र विवरण",
+      risks: "मार्ग जोखिम र सूचना",
+      routes: "मार्ग र निकास",
+      fleet: "सवारी साधन",
+      depots: "डिपो र हब",
+      fieldReport: "फिल्ड घटना अभिलेख",
+      auditTrail: "लेखापरीक्षण अभिलेख",
+      copilot: "धारा कोपाइलट",
+      trackRecord: "विगतको कार्यसम्पादन",
+      scenarios: "के भए के हुन्छ",
+      planner: "पूर्वाधार योजनाकार"
+    },
+    dashboard: {
+      greeting: "शुभ प्रभात, अधिकारीज्यू",
+      todayTitle: "आजका निर्णयहरू",
+      heroCount: "आज 3 वटा गाउँका लागि निर्णय आवश्यक छ"
+    },
+    field: {
+      tabNew: "नयाँ घटना रिपोर्ट",
+      tabPending: "पठाउन बाँकी रिपोर्टहरू",
+      tabSubmitted: "पठाइएका रिपोर्टहरू",
+      reporterLabel: "रिपोर्टरको नाम र पद *",
+      locationLabel: "स्थान / मार्ग *",
+      gpsLabel: "GPS निर्देशाङ्क",
+      captureGps: "GPS लिनुहोस्",
+      typeLabel: "घटनाको प्रकार *",
+      severityLabel: "गम्भीरता *",
+      descLabel: "विवरण र देखिएको अवस्था *",
+      photoLabel: "फोटो / दृश्य प्रमाण",
+      submitBtn: "धारामा रिपोर्ट पठाउनुहोस्"
+    },
+    actions: {
+      approve: "स्वीकृत गर्नुहोस्",
+      change: "परिवर्तन गर्नुहोस्",
+      reject: "अस्वीकार गर्नुहोस्",
+      viewEvidence: "प्रमाण हेर्नुहोस्",
+      viewRoute: "मार्ग हेर्नुहोस्"
+    }
+  },
+  lus: {
+    entry: {
+      tagline: "Harsatna lo thleng tur hriat lawk. Kawng zawh theihna humhim. Tanpuina thil dahkhawl lawk.",
+      officerTitle: "OFFICER DASHBOARD",
+      officerDesc: "Harsatna lo thleng tur, khaw tin kawng zawh theihna, thil thawn chhuah, motor, hriattirna leh thutlukna te enfiah rawh.",
+      fieldTitle: "FIELD THILTHLENG REPORT",
+      fieldDesc: "Leimin, kawng dan, tuilian emaw harsatna dang lo thleng chu field ata report rawh.",
+      openOfficer: "Officer Dashboard hawng rawh →",
+      openField: "Field Report App hawng rawh →"
+    },
+    nav: {
+      overview: "A tlangpui",
+      map: "Live Map",
+      todayDecisions: "Vawiina thutlukna",
+      shipments: "Thil thawn chhuah",
+      risks: "Kawng hlauhawmna leh hriattirna",
+      routes: "Kawng leh chhuahna",
+      fleet: "Motor dinhmun",
+      depots: "Thil dahkhawmna",
+      fieldReport: "Field report chhinchhiahna",
+      auditTrail: "Enfiahna chhinchhiahna",
+      copilot: "DHARA Copilot",
+      trackRecord: "Hnathawh tawh chanchin",
+      scenarios: "Chutiang ni ta se",
+      planner: "Kawng siam ruahmanna"
+    },
+    dashboard: {
+      greeting: "ZING CHIBAI, OFFICER",
+      todayTitle: "Vawiina thutlukna",
+      heroCount: "Vawiinah khua 3 atan thutlukna siam a ngai"
+    },
+    field: {
+      tabNew: "Report thar",
+      tabPending: "La thawn loh report",
+      tabSubmitted: "Thawn tawh report",
+      reporterLabel: "Report-tu hming leh nihna *",
+      locationLabel: "Hmun / Kawng *",
+      gpsLabel: "GPS hmun",
+      captureGps: "GPS la rawh",
+      typeLabel: "Thilthleng chi *",
+      severityLabel: "A nasat dan *",
+      descLabel: "A chanchin leh hmuh dan *",
+      photoLabel: "Thlalak / Finfiahna",
+      submitBtn: "DHARA-ah report thawn rawh"
+    },
+    actions: {
+      approve: "PAWM RAWH",
+      change: "THLAK RAWH",
+      reject: "HNAWL RAWH",
+      viewEvidence: "FINFIAHNA EN RAWH",
+      viewRoute: "KAWNG EN RAWH"
+    }
+  },
+  kha: {
+    entry: {
+      tagline: "Tip lypa ïa ki jingma. Sumar ïa ka lynti. Buh lypa ïa ki jingdonkam.",
+      officerTitle: "OFFICER DASHBOARD",
+      officerDesc: "Peit bniah ïa ki jingma, ka lynti sha ki shnong, ki jingphah, ki kali, ki jingpynkhreh bad ki jingbishar.",
+      fieldTitle: "FIELD JINGJIA REPORT",
+      fieldDesc: "Phah report na field shaphang ka jingkhlad khyndew, ka lynti ba khang, ka jingtuid um ne kiwei ki jingjia.",
+      openOfficer: "Plie ïa ka Officer Dashboard →",
+      openField: "Plie ïa ka Field Report App →"
+    },
+    nav: {
+      overview: "Ka jingpeit baroh",
+      map: "Live Map",
+      todayDecisions: "Ki jingbishar mynta ka sngi",
+      shipments: "Ki jingphah",
+      risks: "Ki jingma ha lynti",
+      routes: "Ki lynti bad ki lad mih",
+      fleet: "Ki kali",
+      depots: "Ki jaka buh jingdonkam",
+      fieldReport: "Ki report na field",
+      auditTrail: "Ka jingthoh jingpeit bniah",
+      copilot: "DHARA Copilot",
+      trackRecord: "Ki kam ba la leh",
+      scenarios: "Lada kumta?",
+      planner: "Ka jingpynkhreh lynti"
+    },
+    dashboard: {
+      greeting: "KHUBLEI, OFFICER",
+      todayTitle: "Ki jingbishar mynta ka sngi",
+      heroCount: "Mynta ka sngi 3 tylli ki shnong ki donkam jingbishar"
+    },
+    field: {
+      tabNew: "Report thymmai",
+      tabPending: "Ki report ba dang ym phah",
+      tabSubmitted: "Ki report ba la phah",
+      reporterLabel: "Ka kyrteng bad ka kam jong ka nongphah *",
+      locationLabel: "Ka jaka / Ka lynti *",
+      gpsLabel: "GPS jaka",
+      captureGps: "Shim GPS",
+      typeLabel: "Ka jait jingjia *",
+      severityLabel: "Katno ka khia *",
+      descLabel: "Ka jingbatai bad kaei ba la iohi *",
+      photoLabel: "Ka dur / Ka jingpyni",
+      submitBtn: "PHAH REPORT SHA DHARA"
+    },
+    actions: {
+      approve: "MYNJUR",
+      change: "PYNKYLLA",
+      reject: "KYNTAIT",
+      viewEvidence: "PEIT JINGPYNI",
+      viewRoute: "PEIT LYNTI"
+    }
+  },
+  nag: {
+    entry: {
+      tagline: "Dikdari aage-te jani lobi. Rasta khula rakhibi. Saman aage-te pathai dibi.",
+      officerTitle: "OFFICER DASHBOARD",
+      officerDesc: "Dikdari, gaon laga rasta, saman pathai diya, gari, khobor aru sidhanto khan sai thakibi.",
+      fieldTitle: "FIELD GHOTONA REPORT",
+      fieldDesc: "Mati gira, rasta bondh, baan pani nohoile dusra dikdari laga khobor field pora dibi.",
+      openOfficer: "Officer Dashboard khulibi →",
+      openField: "Field Report App khulibi →"
+    },
+    nav: {
+      overview: "Pura nojor",
+      map: "Live Map",
+      todayDecisions: "Aji laga sidhanto",
+      shipments: "Saman pathai diya",
+      risks: "Rasta laga dikdari aru khobor",
+      routes: "Rasta aru ulai jabole rasta",
+      fleet: "Gari khan",
+      depots: "Saman rakhi thaka jaga",
+      fieldReport: "Field ghotona laga likha",
+      auditTrail: "Hisab sai laga likha",
+      copilot: "DHARA Copilot",
+      trackRecord: "Aage laga kaam",
+      scenarios: "Eneka hoile ki hobo",
+      planner: "Rasta bonabole plan"
+    },
+    dashboard: {
+      greeting: "NAMASKAR, OFFICER",
+      todayTitle: "Aji laga sidhanto",
+      heroCount: "Aji 3 ta gaon nimite sidhanto lagibo"
+    },
+    field: {
+      tabNew: "Notun ghotona report",
+      tabPending: "Ekhono pathai diya nai",
+      tabSubmitted: "Pathai dise report",
+      reporterLabel: "Report diya manu laga naam aru pod *",
+      locationLabel: "Jaga / Rasta *",
+      gpsLabel: "GPS jaga",
+      captureGps: "GPS lobi",
+      typeLabel: "Ghotona laga kisim *",
+      severityLabel: "Kiman dangor *",
+      descLabel: "Ki hoise aru ki dikhise *",
+      photoLabel: "Photo / Proman",
+      submitBtn: "DHARA te report pathai dibi"
+    },
+    actions: {
+      approve: "MANJUR",
+      change: "BODLI KORIBI",
+      reject: "NA-MANJUR",
+      viewEvidence: "PROMAN SAI",
+      viewRoute: "RASTA SAI"
+    }
   }
 };
+
+// Drafted without a native-speaker review yet: shown with a "draft" label and
+// English tooltips so an officer can always check what a control does.
+const DRAFT_LANGS = new Set(["lus", "kha", "nag"]);
 
 // ====================================================
 // CORE APPLICATION STATE
@@ -352,11 +577,6 @@ let segmentPolylines = [];
 let depotMarkers = [];
 let db = null;
 
-// Chart Instances
-let chartVriTrend = null;
-let chartDistrictBreakdown = null;
-let chartDepotStocks = null;
-let chartAccuracyTrend = null;
 
 // Mock fallback decision habitations for guaranteed rich interactivity
 const BASE_DECISIONS = [
@@ -443,14 +663,26 @@ let liveDecisions = JSON.parse(JSON.stringify(BASE_DECISIONS));
 // INITIALIZATION
 // ====================================================
 document.addEventListener("DOMContentLoaded", () => {
+  initTheme();
+  renderTodayDates();
   initIndexedDB();
   initLanguages();
+  initMapToolbar();
+  initMapSize();
+  initMapToolsMenu();
+  initMapLegend();
+  initSidebarCollapse();
+  initCommandPalette();
+  initKeyboardShortcuts();
+  initSyncControls();
   initNavigation();
   initFieldAppInteractions();
   initScenarioSandbox();
   initModals();
   initMobileNav();
   checkApiHealth();
+  checkLocalAi();
+  initFieldNoteAi();
   fetchAllData();
   
   // Set up live refresh polling every 30 seconds
@@ -526,6 +758,1011 @@ function initMobileNav() {
   }, { passive: true });
 }
 
+
+// ====================================================
+// SHARED UI HELPERS
+// ====================================================
+const ICON_PATHS = {
+  clock: '<circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>',
+  package: '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line>',
+  check: '<polyline points="20 6 9 17 4 12"></polyline>',
+  edit: '<path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>',
+  x: '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>',
+  chart: '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>',
+  route: '<circle cx="6" cy="19" r="3"></circle><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"></path><circle cx="18" cy="5" r="3"></circle>',
+  map: '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line>',
+  sparkle: '<path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z"></path>',
+  pin: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle>',
+  home: '<path d="M3 21V9l9-6 9 6v12"></path><path d="M9 21v-6h6v6"></path>',
+  truck: '<rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle>'
+};
+
+function icon(name, size = 14) {
+  return `<svg class="ico" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON_PATHS[name] || ""}</svg>`;
+}
+
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el && value !== undefined && value !== null && value !== "") el.textContent = value;
+}
+
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+// "#2563EB" + 0.1 -> "rgba(37, 99, 235, 0.1)"; anything else is returned unchanged.
+function withAlpha(color, alpha) {
+  const m = /^#([0-9a-f]{6})$/i.exec(color);
+  if (!m) return color;
+  const n = parseInt(m[1], 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+}
+
+function renderTodayDates() {
+  const today = new Date();
+  setText("overview-date", today.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" }));
+  setText("top-date-display", today.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }));
+}
+
+// ====================================================
+// THEME (light / dark)
+// ====================================================
+// <head> sets data-theme before first paint (saved choice, else the OS
+// setting); this wires the top-bar toggle and re-themes the canvas-drawn
+// parts (charts, map markers, basemap) that CSS variables can't reach.
+const THEME_KEY = "dhara-theme";
+
+function currentTheme() {
+  return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+}
+
+function savedTheme() {
+  try {
+    const t = localStorage.getItem(THEME_KEY);
+    return t === "light" || t === "dark" ? t : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function initTheme() {
+  syncThemeButton();
+  // Officer top bar, role picker and field app each have a toggle.
+  document.querySelectorAll("[data-theme-toggle]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const next = currentTheme() === "dark" ? "light" : "dark";
+      try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+      applyTheme(next);
+    });
+  });
+
+  // Follow the OS setting until the officer picks a theme explicitly.
+  const mq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+  if (mq && mq.addEventListener) {
+    mq.addEventListener("change", (e) => {
+      if (!savedTheme()) applyTheme(e.matches ? "dark" : "light");
+    });
+  }
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  syncThemeButton();
+  refreshChartsForTheme();
+  syncBasemapToTheme();
+  syncFieldMapTheme();
+  safeUpdateMapLayers();
+  applyMapContext(currentMapContext, { fit: false });
+}
+
+function syncThemeButton() {
+  const label = currentTheme() === "dark" ? "Switch to light mode" : "Switch to dark mode";
+  document.querySelectorAll("[data-theme-toggle]").forEach(btn => {
+    btn.title = label;
+    btn.setAttribute("aria-label", label);
+  });
+}
+
+// ====================================================
+// THE ALWAYS-ON MAP: page context, side panel, focus
+// ====================================================
+// There is one Leaflet map and it is on screen for every officer page: the
+// page's content sits in the side panel and the map shows that page's items
+// (shipments -> trucks and destinations, alerts -> flagged roads, ...).
+let pendingMapFocus = null;
+let currentMapContext = "overview";
+let allDataBounds = null;
+
+// Leaflet tiles show hairline gaps on screens scaled to 125% / 150% (common on
+// Windows laptops). Drawing each tile 1px larger closes them.
+// https://github.com/Leaflet/Leaflet/issues/3575
+if (typeof L !== "undefined" && L.GridLayer && !L.GridLayer.prototype._dharaGapFix) {
+  const originalInitTile = L.GridLayer.prototype._initTile;
+  L.GridLayer.include({
+    _dharaGapFix: true,
+    _initTile(tile) {
+      originalInitTile.call(this, tile);
+      const size = this.getTileSize();
+      tile.style.width = `${size.x + 1}px`;
+      tile.style.height = `${size.y + 1}px`;
+    }
+  });
+}
+
+function ensureMap(viewName) {
+  // Deferred one tick so the view switch has laid out and the map container
+  // reports real dimensions before Leaflet measures it.
+  setTimeout(() => {
+    if (!map) {
+      initMap();
+    } else {
+      map.invalidateSize();
+    }
+    applyMapContext(viewName);
+    runPendingMapFocus();
+    syncMapToolbar();
+  }, 50);
+}
+
+// The map is always on screen (beside the page, or pinned above it on
+// phones), so map actions run in place.
+function onLiveMap(run) {
+  if (!map) {
+    pendingMapFocus = { run };
+    return;
+  }
+  try {
+    run();
+  } catch (err) {
+    console.warn("Map focus failed:", err);
+  }
+}
+
+function runPendingMapFocus() {
+  if (!map || !pendingMapFocus) return;
+  const { run } = pendingMapFocus;
+  pendingMapFocus = null;
+  try {
+    run();
+  } catch (err) {
+    console.warn("Map focus failed:", err);
+  }
+}
+
+// Pan/zoom to a place and ring it.
+function focusMapOn(latlng, zoom, popupHtml) {
+  onLiveMap(() => {
+    map.setView(latlng, zoom, { animate: true });
+    showHalo(latlng);
+    if (popupHtml) L.popup({ offset: [0, -6] }).setLatLng(latlng).setContent(popupHtml).openOn(map);
+  });
+}
+
+function showSegmentOnMap(seg) {
+  if (!map || !seg) return;
+  const bounds = L.geoJSON(seg).getBounds();
+  if (!bounds.isValid()) return;
+  const p = seg.properties;
+  map.fitBounds(bounds, { maxZoom: 12, padding: [60, 60] });
+  showHalo(bounds.getCenter());
+  L.popup({ offset: [0, -14] }).setLatLng(bounds.getCenter())
+    .setContent(`<strong>${escapeHtml(roadLabel(p))}</strong><br>Chance of closure: <strong>${Math.round(p.closure_probability * 100)}%</strong>${p.predicted_closed ? " · predicted closed" : ""}<br><span class="mono">${escapeHtml(p.segment_id)}</span>`)
+    .openOn(map);
+}
+
+function focusSegment(segmentId) {
+  const seg = segById.get(segmentId);
+  if (!seg) {
+    showToast("That road segment isn't in the current forecast.", "warning");
+    return;
+  }
+  onLiveMap(() => showSegmentOnMap(seg));
+}
+
+// Pulsing ring that marks the last thing the officer jumped to.
+function showHalo(latlng) {
+  if (!map || !mapLayers.selection) return;
+  mapLayers.selection.clearLayers();
+  L.marker(latlng, {
+    icon: L.divIcon({ className: "map-halo", iconSize: [34, 34] }),
+    interactive: false,
+    keyboard: false,
+    zIndexOffset: 1000
+  }).addTo(mapLayers.selection);
+}
+
+function fitAllData() {
+  if (!map) return;
+  rememberMapFit();
+  if (allDataBounds && allDataBounds.isValid()) {
+    map.fitBounds(allDataBounds, { padding: [40, 40], maxZoom: 9 });
+  } else {
+    map.setView([27.35, 93.4], 7);
+  }
+}
+
+function computeAllDataBounds() {
+  const pts = [];
+  (habitationsData || []).forEach(f => {
+    const c = f.geometry && f.geometry.coordinates;
+    if (c) pts.push([c[1], c[0]]);
+  });
+  (depotsData || []).forEach(d => {
+    const c = d.location && d.location.coordinates;
+    if (c) pts.push([c[1], c[0]]);
+  });
+  allDataBounds = pts.length ? L.latLngBounds(pts) : null;
+}
+
+// ---------- Map size: how the page and the map share the screen ----------
+// Desktop: the map is a column on the right of the page. Tablet/phone: a
+// band above the page that stays put while the page scrolls. The page gets
+// most of the room by default; officers pick Small / Medium / Large / Map
+// only, or drag the divider, and the choice is remembered.
+const MAP_SIZE_SHARE = {
+  wide: { small: 0.30, medium: 0.40, large: 0.60 },   // share of the workspace width
+  tall: { small: 0.30, medium: 0.42, large: 0.64 }    // share of the screen below the top bar
+};
+const MAP_MIN_W = 340;       // keep in step with --map-min-w in style.css
+const PANEL_MIN_W = 460;     // keep in step with --panel-min-w
+const MAP_MIN_H = 200;
+let mapSize = "medium";      // small | medium | large | full | custom
+let mapShare = 0.4;
+let sizeBeforeFull = null;
+
+const stackedLayout = () => window.matchMedia("(max-width: 1024px)").matches;
+const mapSizeKey = () => (stackedLayout() ? "dhara-map-h" : "dhara-map-w");
+
+function savedMapSize() {
+  let raw = null;
+  try { raw = localStorage.getItem(mapSizeKey()); } catch (e) {}
+  if (raw && MAP_SIZE_SHARE.wide[raw]) return { size: raw };
+  const share = parseFloat(raw);
+  if (Number.isFinite(share) && share > 0.1 && share < 0.9) return { size: "custom", share };
+  // Phones start with a small map so the page is still usable.
+  return { size: stackedLayout() && window.innerWidth <= 640 ? "small" : "medium" };
+}
+
+function setMapSize(size, { share = null, persist = true } = {}) {
+  const ws = document.getElementById("workspace");
+  if (!ws) return;
+  if (size === "full" && mapSize !== "full") sizeBeforeFull = { size: mapSize, share: mapShare };
+  if (size !== "full") {
+    mapShare = size === "custom" ? share : MAP_SIZE_SHARE[stackedLayout() ? "tall" : "wide"][size];
+    ws.style.setProperty("--map-share", mapShare.toFixed(3));
+  }
+  mapSize = size;
+  ws.dataset.mapSize = size;
+  ws.classList.toggle("panel-hidden", size === "full");
+  if (persist && size !== "full") {
+    try { localStorage.setItem(mapSizeKey(), size === "custom" ? mapShare.toFixed(3) : size); } catch (e) {}
+  }
+  syncMapSizeControls();
+  afterMapResize();
+}
+
+function toggleFullMap() {
+  if (mapSize === "full") {
+    const back = sizeBeforeFull || savedMapSize();
+    setMapSize(back.size, { share: back.share, persist: false });
+  } else {
+    setMapSize("full", { persist: false });
+  }
+}
+
+// The Live Map page opens with a large map; every other page uses the
+// officer's own choice so the page has room to work.
+function applyPageMapSize(viewName) {
+  if (viewName === "map") {
+    setMapSize("large", { persist: false });
+    return;
+  }
+  const saved = savedMapSize();
+  setMapSize(saved.size, { share: saved.share, persist: false });
+}
+
+function syncMapSizeControls() {
+  document.querySelectorAll("[data-map-size]").forEach(btn => {
+    btn.setAttribute("aria-pressed", String(btn.dataset.mapSize === mapSize));
+  });
+  document.querySelectorAll("[data-panel-toggle]").forEach(btn => {
+    const full = mapSize === "full";
+    btn.title = full ? "Show the page next to the map" : "Map only: hide the page";
+    btn.setAttribute("aria-pressed", String(full));
+  });
+  const bar = document.getElementById("workspace-splitter");
+  if (bar) {
+    bar.setAttribute("aria-orientation", stackedLayout() ? "horizontal" : "vertical");
+    bar.setAttribute("aria-valuenow", String(Math.round(mapShare * 100)));
+  }
+}
+
+// After the map changes size, re-frame this page's places if the officer
+// hasn't moved the map themselves, and tidy the key for the new size.
+let mapFitView = null;
+let mapResizeTimer = null;
+
+function rememberMapFit() {
+  if (!map) return;
+  map.once("moveend", () => { mapFitView = { center: map.getCenter(), zoom: map.getZoom() }; });
+}
+
+function mapStillFramed() {
+  if (!map || !mapFitView || map.getZoom() !== mapFitView.zoom) return false;
+  const centre = map.getSize().divideBy(2);
+  return map.latLngToContainerPoint(mapFitView.center).distanceTo(centre) < 4;
+}
+
+function afterMapResize() {
+  clearTimeout(mapResizeTimer);
+  mapResizeTimer = setTimeout(() => {
+    if (!map) return;
+    map.invalidateSize({ pan: true });
+    if (mapStillFramed()) applyMapContext(currentMapContext);
+    syncLegendToMapSize();
+  }, 320);
+}
+
+function initMapSize() {
+  const ws = document.getElementById("workspace");
+  const bar = document.getElementById("workspace-splitter");
+  if (!ws) return;
+
+  // The pinned map band sits right under the top bar, whose height varies.
+  const topBar = document.querySelector(".top-bar");
+  const syncTopBar = () => {
+    if (topBar && topBar.offsetHeight) document.documentElement.style.setProperty("--topbar-live", `${topBar.offsetHeight}px`);
+  };
+  syncTopBar();
+  if (topBar && typeof ResizeObserver !== "undefined") new ResizeObserver(syncTopBar).observe(topBar);
+  else window.addEventListener("resize", syncTopBar);
+
+  document.querySelectorAll("[data-map-size]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const size = btn.dataset.mapSize;
+      if (size === "full") toggleFullMap(); else setMapSize(size);
+    });
+  });
+  document.querySelectorAll("[data-panel-toggle]").forEach(btn => btn.addEventListener("click", toggleFullMap));
+
+  // Esc leaves "map only", unless it is closing something else first.
+  // Capture phase: runs before the handlers that close dialogs.
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape" || mapSize !== "full") return;
+    if (e.target.closest && e.target.closest("input, textarea, select")) return;
+    const pop = document.getElementById("map-tools-pop");
+    if (pop && !pop.hidden) return;
+    if (document.querySelector(".modal-overlay:not(.hidden), .cmdk-overlay:not(.hidden), .t3d-overlay.open")) return;
+    toggleFullMap();
+  }, true);
+
+  // Crossing the tablet breakpoint swaps side-by-side for stacked.
+  window.matchMedia("(max-width: 1024px)").addEventListener("change", () => {
+    const saved = savedMapSize();
+    setMapSize(saved.size, { share: saved.share, persist: false });
+  });
+
+  if (!bar) return;
+  const shareAt = (e) => {
+    const box = ws.getBoundingClientRect();
+    if (stackedLayout()) {
+      const top = document.getElementById("workspace-map").getBoundingClientRect().top;
+      const room = window.innerHeight - top;
+      return Math.min(Math.max((e.clientY - top) / room, MAP_MIN_H / room), 1 - 140 / room);
+    }
+    const lo = MAP_MIN_W / box.width;
+    const hi = Math.max(lo, 1 - PANEL_MIN_W / box.width);
+    return Math.min(Math.max((box.right - e.clientX) / box.width, lo), hi);
+  };
+  // Snap to a preset when the drag ends close to one.
+  const settle = (share) => {
+    const table = MAP_SIZE_SHARE[stackedLayout() ? "tall" : "wide"];
+    const near = Object.keys(table).find(k => Math.abs(table[k] - share) < 0.025);
+    if (near) setMapSize(near); else setMapSize("custom", { share });
+  };
+
+  let dragging = false;
+  bar.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    dragging = true;
+    bar.setPointerCapture(e.pointerId);
+    ws.classList.add("resizing");
+  });
+  bar.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    mapShare = shareAt(e);
+    ws.style.setProperty("--map-share", mapShare.toFixed(3));
+  });
+  const endDrag = () => {
+    if (!dragging) return;
+    dragging = false;
+    ws.classList.remove("resizing");
+    settle(mapShare);
+  };
+  bar.addEventListener("pointerup", endDrag);
+  bar.addEventListener("pointercancel", endDrag);
+  bar.addEventListener("dblclick", () => setMapSize(stackedLayout() && window.innerWidth <= 640 ? "small" : "medium"));
+  bar.addEventListener("keydown", (e) => {
+    const stacked = stackedLayout();
+    const grow = stacked ? "ArrowDown" : "ArrowLeft";
+    const shrink = stacked ? "ArrowUp" : "ArrowRight";
+    const table = MAP_SIZE_SHARE[stacked ? "tall" : "wide"];
+    let share = null;
+    if (e.key === grow) share = mapShare + 0.05;
+    else if (e.key === shrink) share = mapShare - 0.05;
+    else if (e.key === "Home") share = table.small;
+    else if (e.key === "End") share = table.large;
+    if (share == null) return;
+    e.preventDefault();
+    settle(Math.min(Math.max(share, 0.2), 0.8));
+  });
+}
+
+// ---------- Map tools menu (map pane header) ----------
+function initMapToolsMenu() {
+  const btn = document.getElementById("btn-map-tools");
+  const pop = document.getElementById("map-tools-pop");
+  if (!btn || !pop) return;
+  const close = () => {
+    pop.hidden = true;
+    btn.setAttribute("aria-expanded", "false");
+  };
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const open = pop.hidden;
+    pop.hidden = !open;
+    btn.setAttribute("aria-expanded", String(open));
+    if (open) {
+      const first = pop.querySelector("button");
+      if (first) first.focus();
+    }
+  });
+  pop.addEventListener("click", (e) => {
+    const item = e.target.closest("button");
+    if (!item) return;
+    close();
+    // The tool panels need room; a small map grows to large for them.
+    const tool = item.dataset.mapTool;
+    const view = document.getElementById("map-viewport");
+    if ((tool === "intel" || tool === "notes") && view && (view.clientWidth < 520 || view.clientHeight < 460) && mapSize !== "full") {
+      setMapSize("large", { persist: false });
+    }
+  });
+  document.addEventListener("click", (e) => {
+    if (!pop.hidden && !e.target.closest(".map-tools-menu")) close();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !pop.hidden) {
+      close();
+      btn.focus();
+    }
+  });
+}
+
+// ---------- What the map shows for each page ----------
+function labelMarker(latlng, text, cls = "") {
+  return L.marker(latlng, {
+    icon: L.divIcon({ className: `map-label-marker ${cls}`, html: `<span>${escapeHtml(text)}</span>`, iconSize: null }),
+    interactive: false,
+    keyboard: false
+  });
+}
+
+function ringMarker(latlng, opts = {}) {
+  return L.circleMarker(latlng, Object.assign({
+    radius: 11, color: cssVar("--accent-crimson") || "#A82E3A", weight: 3, fill: false, opacity: 0.95
+  }, opts));
+}
+
+function segmentOutline(seg, group) {
+  return L.geoJSON(seg, {
+    style: { color: cssVar("--accent-crimson") || "#A82E3A", weight: 11, opacity: 0.28, lineCap: "round" },
+    interactive: false
+  }).addTo(group);
+}
+
+function habLatLng(villageId) {
+  const h = habById.get(villageId);
+  return h ? [h.geometry.coordinates[1], h.geometry.coordinates[0]] : null;
+}
+
+const MAP_CONTEXT = {
+  decisions: {
+    title: "Villages waiting for a decision",
+    sub: (n) => `${n} villages ringed in red · the 5 most urgent are labelled`,
+    highlight(group) {
+      const pts = [];
+      pendingDecisions().forEach((d, i) => {
+        const ll = habLatLng(d.village_id);
+        if (!ll) return;
+        pts.push(ll);
+        ringMarker(ll).bindTooltip(`${escapeHtml(d.village_name)} · ${d.recommended_units}t ${escapeHtml(d.recommended_commodity)}`, { direction: "top", className: "map-tip" })
+          .on("click", () => openDecision(d.id))
+          .addTo(group);
+        if (i < 5) labelMarker(ll, `${i + 1}. ${d.village_name}`).addTo(group);
+      });
+      return pts;
+    }
+  },
+  risks: {
+    title: "Roads with an active alert",
+    sub: (n) => `${n} alerted roads outlined in red`,
+    highlight(group) {
+      const pts = [];
+      alertsData.forEach(a => {
+        const loc = parseAlertLocation(a.location);
+        const seg = loc.segment ? segById.get(loc.segment) : null;
+        if (!seg) return;
+        const b = segmentOutline(seg, group).getBounds();
+        if (b.isValid()) { pts.push(b.getNorthEast(), b.getSouthWest()); }
+      });
+      return pts;
+    }
+  },
+  routes: {
+    title: "The 12 roads most likely to close",
+    sub: () => "Numbers on the map match the list",
+    highlight(group) {
+      const pts = [];
+      topRiskSegments(12).forEach((seg, i) => {
+        const b = segmentOutline(seg, group).getBounds();
+        if (!b.isValid()) return;
+        pts.push(b.getNorthEast(), b.getSouthWest());
+        L.marker(b.getCenter(), {
+          icon: L.divIcon({ className: "map-rank", html: `<span>${i + 1}</span>`, iconSize: [22, 22] }),
+          keyboard: false
+        }).on("click", () => showSegmentOnMap(seg)).addTo(group);
+      });
+      return pts;
+    }
+  },
+  shipments: {
+    title: "Relief shipments on the move",
+    sub: (n) => `${n} trucks · dashed line shows the way to each destination`,
+    highlight(group) {
+      const pts = [];
+      currentShipments().forEach(s => {
+        const c = Array.isArray(s.current_coordinates) ? [s.current_coordinates[1], s.current_coordinates[0]] : null;
+        const m = /\((hab_[^)]+)\)/.exec(s.destination_village || "");
+        const dest = m ? habLatLng(m[1]) : null;
+        if (c) {
+          pts.push(c);
+          L.marker(c, { icon: truckIcon(true), keyboard: false })
+            .bindTooltip(`${escapeHtml(s.license_number)} · ${escapeHtml(s.status)}`, { direction: "top", offset: [0, -12], className: "map-tip" })
+            .on("click", () => openShipmentModal(s.license_number))
+            .addTo(group);
+          labelMarker(c, s.license_number, "below").addTo(group);
+        }
+        if (dest) {
+          pts.push(dest);
+          ringMarker(dest, { radius: 8 }).bindTooltip(`Destination: ${escapeHtml(s.destination_village)}`, { direction: "top", className: "map-tip" }).addTo(group);
+          if (c) L.polyline([c, dest], { color: cssVar("--accent-crimson") || "#A82E3A", weight: 2.5, dashArray: "6 6", opacity: 0.9, interactive: false }).addTo(group);
+        }
+      });
+      return pts;
+    }
+  },
+  fleet: {
+    title: "Relief trucks",
+    sub: (n) => `${n} trucks with their IDs · simulated GPS`,
+    highlight(group) {
+      const pts = [];
+      (vehiclesData.length ? vehiclesData : []).forEach(v => {
+        if (!Array.isArray(v.coordinates)) return;
+        const ll = [v.coordinates[1], v.coordinates[0]];
+        pts.push(ll);
+        ringMarker(ll, { radius: 15 }).addTo(group);
+        labelMarker(ll, String(v.vehicle_id).toUpperCase(), "below").addTo(group);
+      });
+      return pts;
+    }
+  },
+  depots: {
+    title: "Supply depots",
+    sub: (n) => `${n} depots with their names`,
+    highlight(group) {
+      const pts = [];
+      currentDepots().forEach(d => {
+        const c = d.location && d.location.coordinates;
+        if (!c) return;
+        const ll = [c[1], c[0]];
+        pts.push(ll);
+        ringMarker(ll, { radius: 17 }).addTo(group);
+        labelMarker(ll, d.name, "below").addTo(group);
+      });
+      return pts;
+    }
+  }
+};
+
+function applyMapContext(viewName, { fit = true } = {}) {
+  currentMapContext = viewName;
+  if (!map || !mapLayers.context) return;
+  mapLayers.context.clearLayers();
+  const ctx = MAP_CONTEXT[viewName];
+  let count = 0;
+  if (ctx) {
+    const pts = ctx.highlight(mapLayers.context) || [];
+    count = viewName === "risks" || viewName === "routes" ? pts.length / 2 : pts.length;
+    if (viewName === "shipments") count = currentShipments().length;
+    if (fit && pts.length) {
+      rememberMapFit();
+      map.fitBounds(L.latLngBounds(pts), { padding: [60, 60], maxZoom: 11 });
+    } else if (fit) {
+      fitAllData();
+    }
+  } else if (fit && (viewName === "overview" || viewName === "map")) {
+    fitAllData();
+  }
+  renderMapCaption(count);
+}
+
+function renderMapCaption(count) {
+  const title = document.getElementById("map-caption-title");
+  const sub = document.getElementById("map-caption-sub");
+  if (!title || !sub) return;
+  const ctx = MAP_CONTEXT[currentMapContext];
+  const activeDay = document.querySelector("#forecast-day-chips .forecast-day-chip.active");
+  const day = activeDay ? activeDay.textContent.trim() : "Day 1";
+  if (ctx) {
+    title.textContent = ctx.title;
+    sub.textContent = count ? ctx.sub(Math.round(count)) : "Nothing to show for this page yet";
+    return;
+  }
+  const villages = (habitationsData || []).length;
+  const roads = (atRiskSegmentsData || []).filter(s => s.properties.closure_probability >= 0.25).length;
+  title.textContent = "Every village, road and relief depot";
+  if (!villages) {
+    sub.textContent = apiOnline === false
+      ? "Map data unavailable: the DHARA API isn't responding"
+      : "Loading villages and roads…";
+    return;
+  }
+  sub.textContent = `${villages.toLocaleString()} villages · ${roads} roads at risk · forecast ${day}`;
+}
+
+// ---------- Map guide page + tools ----------
+function initMapToolbar() {
+  document.querySelectorAll("[data-map-tool]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (!map) {
+        showToast("The map is still loading. Try again in a moment.", "info");
+        return;
+      }
+      const tool = btn.dataset.mapTool;
+      if (tool === "intel" && window.DharaIntel && window.DharaIntel.togglePanel) {
+        window.DharaIntel.togglePanel();
+      } else if (tool === "notes" && window.DharaOps && window.DharaOps.togglePanel) {
+        window.DharaOps.togglePanel();
+      } else if (tool === "terrain" && window.DharaTerrain3D) {
+        window.DharaTerrain3D.open();
+      } else if (tool === "layers" && mapLayerControl) {
+        const el = mapLayerControl.getContainer();
+        if (el.classList.contains("leaflet-control-layers-expanded")) {
+          mapLayerControl.collapse();
+        } else {
+          mapLayerControl.expand();
+        }
+      }
+      syncMapToolbar();
+    });
+  });
+
+  document.querySelectorAll("[data-map-reset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (!map) return;
+      mapLayers.selection.clearLayers();
+      map.closePopup();
+      fitAllData();
+    });
+  });
+
+  document.querySelectorAll("[data-layer-toggle]").forEach(box => {
+    box.addEventListener("change", () => {
+      const layer = mapLayers[box.dataset.layerToggle];
+      if (!map || !layer) return;
+      if (box.checked) map.addLayer(layer); else map.removeLayer(layer);
+    });
+  });
+
+  // Keep the caption's forecast day in step with the Day 1-7 chips
+  document.querySelectorAll("#forecast-day-chips .forecast-day-chip").forEach(chip => {
+    chip.addEventListener("click", () => setTimeout(() => renderMapCaption(), 50));
+  });
+}
+
+function syncLayerToggles() {
+  document.querySelectorAll("[data-layer-toggle]").forEach(box => {
+    const layer = mapLayers[box.dataset.layerToggle];
+    if (map && layer) box.checked = map.hasLayer(layer);
+  });
+}
+
+function syncMapToolbar() {
+  const state = {
+    intel: !!document.querySelector(".intel-panel:not(.ops-panel):not(.collapsed)"),
+    notes: !!document.querySelector(".ops-panel:not(.collapsed)")
+  };
+  document.querySelectorAll("[data-map-tool]").forEach(btn => {
+    const tool = btn.dataset.mapTool;
+    if (!(tool in state)) return;
+    btn.classList.toggle("active", state[tool]);
+    btn.setAttribute("aria-pressed", String(state[tool]));
+  });
+}
+
+// ---------- Field app: where is the incident? ----------
+let fieldMap = null;
+let fieldPin = null;
+let fieldBasemap = null;
+
+function parseLatLon(text) {
+  const parts = String(text || "").split(",").map(x => parseFloat(x.trim()));
+  return parts.length === 2 && parts.every(Number.isFinite) ? parts : null;
+}
+
+function setFieldCoords(latlng, note) {
+  const input = document.getElementById("f-rep-coords");
+  const hint = document.getElementById("gps-status-hint");
+  const lat = latlng.lat.toFixed(4);
+  const lng = latlng.lng.toFixed(4);
+  if (input) input.value = `${lat}, ${lng}`;
+  if (hint) hint.textContent = `✓ ${note}: Lat ${lat}, Lon ${lng}`;
+}
+
+// Move the pin to whatever is in the coordinates box (after a GPS capture).
+function syncFieldPin() {
+  if (!fieldMap || !fieldPin) return;
+  const ll = parseLatLon((document.getElementById("f-rep-coords") || {}).value);
+  if (!ll) return;
+  fieldPin.setLatLng(ll);
+  fieldMap.setView(ll, Math.max(fieldMap.getZoom(), 12));
+}
+
+function initFieldMap() {
+  const el = document.getElementById("field-map");
+  if (!el || typeof L === "undefined" || el.offsetParent === null) return;
+  if (fieldMap) {
+    fieldMap.invalidateSize();
+    return;
+  }
+  const start = parseLatLon((document.getElementById("f-rep-coords") || {}).value) || [27.2415, 92.418];
+  fieldMap = L.map(el, { center: start, zoom: 12, attributionControl: false, scrollWheelZoom: false, tap: true });
+  fieldBasemap = buildBasemaps()[currentTheme()];
+  fieldBasemap.addTo(fieldMap);
+
+  if (atRiskSegmentsData && atRiskSegmentsData.length) {
+    const c = mapPalette();
+    L.geoJSON(atRiskSegmentsData, {
+      style: f => ({ color: f.properties.closure_probability >= 0.5 ? c.red : (f.properties.closure_probability >= 0.25 ? c.amber : c.blue), weight: 3, opacity: 0.85 }),
+      interactive: false
+    }).addTo(fieldMap);
+  }
+
+  fieldPin = L.marker(start, {
+    draggable: true,
+    icon: L.divIcon({ className: "field-pin", html: icon("pin", 30), iconSize: [30, 30], iconAnchor: [15, 29] })
+  }).addTo(fieldMap);
+  fieldPin.on("dragend", () => setFieldCoords(fieldPin.getLatLng(), "Pin moved on the map"));
+  fieldMap.on("click", (e) => {
+    fieldPin.setLatLng(e.latlng);
+    setFieldCoords(e.latlng, "Location set on the map");
+  });
+  setTimeout(() => fieldMap && fieldMap.invalidateSize(), 250);
+}
+
+function syncFieldMapTheme() {
+  if (!fieldMap || !fieldBasemap) return;
+  fieldMap.removeLayer(fieldBasemap);
+  fieldBasemap = buildBasemaps()[currentTheme()];
+  fieldBasemap.addTo(fieldMap);
+  fieldBasemap.eachLayer ? fieldBasemap.eachLayer(l => l.bringToBack && l.bringToBack()) : fieldBasemap.bringToBack();
+}
+
+// ====================================================
+// SIDEBAR RAIL, QUICK SEARCH & KEYBOARD SHORTCUTS
+// ====================================================
+const SIDEBAR_KEY = "dhara-sidebar";
+
+function setSidebarCollapsed(collapsed) {
+  const layout = document.getElementById("view-officer-app");
+  const btn = document.getElementById("btn-sidebar-collapse");
+  if (!layout) return;
+  layout.classList.toggle("sidebar-collapsed", collapsed);
+  if (btn) {
+    const label = collapsed ? "Expand sidebar ( [ )" : "Collapse sidebar ( [ )";
+    btn.title = label;
+    btn.setAttribute("aria-label", label);
+    btn.setAttribute("aria-expanded", String(!collapsed));
+  }
+  try { localStorage.setItem(SIDEBAR_KEY, collapsed ? "collapsed" : "open"); } catch (e) {}
+}
+
+function initSidebarCollapse() {
+  // Nav labels double as tooltips when only the icons are showing.
+  document.querySelectorAll(".sidebar .nav-item").forEach(item => {
+    const label = item.querySelector("[data-i18n]");
+    if (label) item.title = label.textContent.trim();
+  });
+  let collapsed = false;
+  try { collapsed = localStorage.getItem(SIDEBAR_KEY) === "collapsed"; } catch (e) {}
+  setSidebarCollapsed(collapsed);
+  const btn = document.getElementById("btn-sidebar-collapse");
+  if (btn) {
+    btn.addEventListener("click", () => {
+      const layout = document.getElementById("view-officer-app");
+      setSidebarCollapsed(!layout.classList.contains("sidebar-collapsed"));
+    });
+  }
+}
+
+// ---------- Quick search (Ctrl+K / "/") ----------
+let paletteItems = [];
+let paletteIndex = 0;
+
+function isTypingTarget(el) {
+  return !!el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
+}
+
+function officerAppVisible() {
+  const layout = document.getElementById("view-officer-app");
+  return !!layout && !layout.classList.contains("hidden");
+}
+
+function openPalette() {
+  const overlay = document.getElementById("command-palette");
+  const input = document.getElementById("cmdk-input");
+  if (!overlay || !input) return;
+  overlay.classList.remove("hidden");
+  input.value = "";
+  renderPalette("");
+  setTimeout(() => input.focus(), 0);
+}
+
+function closePalette() {
+  const overlay = document.getElementById("command-palette");
+  if (overlay) overlay.classList.add("hidden");
+}
+
+function paletteOpen() {
+  const overlay = document.getElementById("command-palette");
+  return !!overlay && !overlay.classList.contains("hidden");
+}
+
+function buildPaletteItems(query) {
+  const q = query.trim().toLowerCase();
+  const items = [];
+  const matches = (text) => !q || String(text).toLowerCase().includes(q);
+
+  Object.entries(OFFICER_VIEW_TITLES).forEach(([view, title]) => {
+    if (matches(title) || matches(view)) {
+      items.push({ group: "Pages", icon: "map", label: title, sub: `#/${view}`, run: () => { window.location.hash = `#/${view}`; } });
+    }
+  });
+  [
+    { label: "New field report", sub: "Field reporting app", hash: "#/field-app", icon: "edit" },
+    { label: "Switch role", sub: "Officer / field selection", hash: "#/entry", icon: "route" }
+  ].forEach(x => {
+    if (matches(x.label)) items.push({ group: "Pages", icon: x.icon, label: x.label, sub: x.sub, run: () => { window.location.hash = x.hash; } });
+  });
+
+  const decisions = [...liveDecisions].sort(compareDecisions)
+    .filter(d => !q || d.village_name.toLowerCase().includes(q) || String(d.district).toLowerCase().includes(q))
+    .slice(0, q ? 6 : 3);
+  decisions.forEach(d => {
+    items.push({
+      group: "Decisions",
+      icon: "package",
+      label: d.village_name,
+      sub: `${d.recommended_units}t ${String(d.recommended_commodity).toLowerCase()} · VRI ${d.current_vri} · ${d.status}`,
+      run: () => openDecision(d.id)
+    });
+  });
+
+  if (q.length >= 2 && window.DharaIntel && window.DharaIntel.search) {
+    window.DharaIntel.search(q).forEach(r => {
+      items.push({
+        group: "Places on the map",
+        icon: "pin",
+        label: r.label,
+        sub: r.sub,
+        run: () => onLiveMap(() => {
+          if (window.DharaIntel.focus) window.DharaIntel.focus(r);
+          else map.setView(r.ll, 12);
+          showHalo(r.ll);
+        })
+      });
+    });
+  }
+  return items;
+}
+
+function renderPalette(query) {
+  const list = document.getElementById("cmdk-results");
+  if (!list) return;
+  paletteItems = buildPaletteItems(query);
+  paletteIndex = 0;
+  if (!paletteItems.length) {
+    list.innerHTML = `<li class="cmdk-empty">No matches for "${escapeHtml(query)}". Try a village, depot or page name.</li>`;
+    return;
+  }
+  let html = "";
+  let group = null;
+  paletteItems.forEach((it, i) => {
+    if (it.group !== group) {
+      group = it.group;
+      html += `<li class="cmdk-group" role="presentation">${escapeHtml(group)}</li>`;
+    }
+    html += `<li role="option" id="cmdk-opt-${i}" class="cmdk-item${i === 0 ? " active" : ""}" data-i="${i}" aria-selected="${i === 0}">
+      <span class="cmdk-icon">${icon(it.icon, 15)}</span>
+      <span class="cmdk-label">${escapeHtml(it.label)}</span>
+      <span class="cmdk-sub">${escapeHtml(it.sub || "")}</span>
+    </li>`;
+  });
+  list.innerHTML = html;
+}
+
+function movePalette(delta) {
+  if (!paletteItems.length) return;
+  paletteIndex = (paletteIndex + delta + paletteItems.length) % paletteItems.length;
+  document.querySelectorAll("#cmdk-results .cmdk-item").forEach(el => {
+    const on = Number(el.dataset.i) === paletteIndex;
+    el.classList.toggle("active", on);
+    el.setAttribute("aria-selected", String(on));
+    if (on) el.scrollIntoView({ block: "nearest" });
+  });
+}
+
+function runPaletteItem(i) {
+  const it = paletteItems[i];
+  if (!it) return;
+  closePalette();
+  it.run();
+}
+
+function initCommandPalette() {
+  const overlay = document.getElementById("command-palette");
+  const input = document.getElementById("cmdk-input");
+  const list = document.getElementById("cmdk-results");
+  if (!overlay || !input || !list) return;
+
+  document.querySelectorAll("[data-open-search]").forEach(btn => btn.addEventListener("click", openPalette));
+  input.addEventListener("input", () => renderPalette(input.value));
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); movePalette(1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); movePalette(-1); }
+    else if (e.key === "Enter") { e.preventDefault(); runPaletteItem(paletteIndex); }
+    else if (e.key === "Escape") { e.preventDefault(); closePalette(); }
+  });
+  list.addEventListener("click", (e) => {
+    const item = e.target.closest(".cmdk-item");
+    if (item) runPaletteItem(Number(item.dataset.i));
+  });
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) closePalette();
+  });
+}
+
+function initKeyboardShortcuts() {
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+      if (!officerAppVisible()) return;
+      e.preventDefault();
+      if (paletteOpen()) closePalette(); else openPalette();
+      return;
+    }
+    if (e.ctrlKey || e.metaKey || e.altKey || isTypingTarget(e.target) || paletteOpen()) return;
+    if (!officerAppVisible()) return;
+    if (e.key === "/") {
+      e.preventDefault();
+      openPalette();
+    } else if (e.key === "[" && window.innerWidth > 768) {
+      const layout = document.getElementById("view-officer-app");
+      setSidebarCollapsed(!layout.classList.contains("sidebar-collapsed"));
+    }
+  });
+}
 
 // ====================================================
 // 1. OFFLINE INDEXEDDB SYSTEM
@@ -667,6 +1904,9 @@ function initLanguages() {
         if (langSelectEntry) langSelectEntry.value = currentLang;
         if (langSelectField) langSelectField.value = currentLang;
         applyTranslations();
+        if (DRAFT_LANGS.has(currentLang)) {
+          showToast("This translation is a draft awaiting native-speaker review. Hover over any label to see the English.", "warning");
+        }
       });
     }
   });
@@ -674,22 +1914,31 @@ function initLanguages() {
   applyTranslations();
 }
 
+function lookupTranslation(dict, key) {
+  let val = dict;
+  for (const p of key.split(".")) {
+    val = val ? val[p] : null;
+  }
+  return typeof val === "string" ? val : null;
+}
+
 function applyTranslations() {
-  const dict = I18N[currentLang] || I18N.en;
+  if (!I18N[currentLang]) currentLang = "en";
+  const dict = I18N[currentLang];
+  const isDraft = DRAFT_LANGS.has(currentLang);
+  document.documentElement.lang = currentLang;
   document.querySelectorAll("[data-i18n]").forEach(el => {
     const key = el.dataset.i18n;
-    const parts = key.split(".");
-    let val = dict;
-    for (const p of parts) {
-      if (val && val[p]) {
-        val = val[p];
-      } else {
-        val = null;
-        break;
-      }
-    }
-    if (val && typeof val === "string") {
-      el.innerHTML = val;
+    const english = lookupTranslation(I18N.en, key);
+    // A missing string falls back to English rather than leaving the previous language's text.
+    const val = lookupTranslation(dict, key) || english;
+    if (val) el.innerHTML = val;
+    if (isDraft && english) {
+      el.title = english.replace(/<[^>]+>/g, "");
+      el.dataset.i18nTitle = "1";
+    } else if (el.dataset.i18nTitle) {
+      el.removeAttribute("title");
+      delete el.dataset.i18nTitle;
     }
   });
 }
@@ -747,9 +1996,28 @@ function initNavigation() {
   handleRoute();
 }
 
+const OFFICER_VIEW_TITLES = {
+  overview: "Overview",
+  map: "Live map",
+  decisions: "Today's decisions",
+  risks: "Corridor risks & alerts",
+  routes: "Routes & egress",
+  shipments: "Shipments & manifests",
+  fleet: "Fleet telemetry",
+  depots: "Depots & hubs",
+  "field-reports": "Field incident logs",
+  audit: "Audit trail",
+  "track-record": "Track record",
+  copilot: "DHARA Copilot",
+  scenarios: "What-if scenarios",
+  planner: "Infrastructure planner"
+};
+
 function handleRoute() {
-  const hash = window.location.hash || "#/entry";
-  let viewName = hash.replace("#/", "") || "entry";
+  // /dashboard with no hash opens the officer Overview; the role picker
+  // stays reachable at #/entry (brand logo, "switch role" button).
+  const hash = window.location.hash || "#/overview";
+  let viewName = hash.replace("#/", "") || "overview";
 
   const entryScreen = document.getElementById("view-entry");
   const fieldAppScreen = document.getElementById("view-field-app");
@@ -766,57 +2034,63 @@ function handleRoute() {
     if (entryScreen) entryScreen.classList.add("hidden");
     if (fieldAppScreen) fieldAppScreen.classList.remove("hidden");
     if (officerAppLayout) officerAppLayout.classList.add("hidden");
+    // The field form has its own small map for the incident location.
+    setTimeout(initFieldMap, 60);
     return;
   }
 
-  // Officer Dashboard Sub-Views
+  // Officer Dashboard Sub-Views (unknown hashes fall back to Overview)
+  if (!(viewName in OFFICER_VIEW_TITLES)) viewName = "overview";
+
   if (entryScreen) entryScreen.classList.add("hidden");
   if (fieldAppScreen) fieldAppScreen.classList.add("hidden");
   if (officerAppLayout) officerAppLayout.classList.remove("hidden");
 
   // Highlight Sidebar Nav
   document.querySelectorAll(".sidebar .nav-item").forEach(item => {
-    const v = item.dataset.view;
-    item.classList.toggle("active", v === viewName || (v === "overview" && viewName === "decisions"));
+    const active = item.dataset.view === viewName;
+    item.classList.toggle("active", active);
+    if (active) item.setAttribute("aria-current", "page");
+    else item.removeAttribute("aria-current");
   });
 
   // Switch Viewport Divs
-  const officerViews = [
-    "overview", "decisions", "risks", "routes", "shipments", "fleet", 
-    "depots", "field-reports", "audit", "track-record", "copilot", 
-    "scenarios", "planner"
-  ];
-
-  officerViews.forEach(v => {
+  Object.keys(OFFICER_VIEW_TITLES).forEach(v => {
     const el = document.getElementById(`view-${v}`);
     if (el) el.classList.toggle("hidden", v !== viewName);
   });
 
   // Update Breadcrumb Title
   const bcTitle = document.getElementById("bc-title");
-  if (bcTitle) {
-    bcTitle.textContent = viewName.replace("-", " ").toUpperCase();
-  }
+  if (bcTitle) bcTitle.textContent = OFFICER_VIEW_TITLES[viewName];
+  document.title = `${OFFICER_VIEW_TITLES[viewName]} · DHARA`;
 
-  // Init / resize the Map when the Overview view becomes visible.
-  // Deferred one tick so the "hidden" class removal above has actually
-  // taken effect and the container reports real dimensions.
-  if (viewName === "overview") {
-    setTimeout(() => {
-      if (!map) {
-        initMap();
-      } else {
-        map.invalidateSize();
-      }
-    }, 50);
-  }
+  const main = document.querySelector(".main-content");
+  if (main) main.dataset.view = viewName;
 
+  // The map is on screen for every officer page; it shows this page's items.
+  // Opening a page always brings the page back, even after "map only".
+  applyPageMapSize(viewName);
+  ensureMap(viewName);
+
+  const panel = document.getElementById("workspace-panel");
+  if (panel) panel.scrollTop = 0;
   window.scrollTo(0, 0);
 }
 
 // ====================================================
 // 4. DATA FETCHING & BACKEND INTEGRATION
 // ====================================================
+let forecastData = null;
+let mapFramedWithData = false;
+let habById = new Map();   // village id -> habitation feature
+let segById = new Map();   // segment id -> at-risk segment feature
+
+// Sync status for the top-bar pill and the offline banner
+let lastSyncAt = null;
+let apiOnline = null;      // null until the first fetch finishes
+let syncInFlight = false;
+
 async function checkApiHealth() {
   const statusSub = document.getElementById("sidebar-status-sub");
   try {
@@ -832,67 +2106,63 @@ async function checkApiHealth() {
 }
 
 async function fetchAllData() {
+  if (syncInFlight) return;
+  syncInFlight = true;
+  renderSyncStatus();
+
+  const getJson = (path) => fetch(`${API_BASE}${path}`).then(r => {
+    if (!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
+    return r.json();
+  });
+
   try {
-    const [habRes, segRes, dispRes, shipRes, vehRes, depRes, altRes, trRes, audRes, autoRes, covRes] = await Promise.allSettled([
-      fetch(`${API_BASE}/habitations`).then(r => r.json()),
-      fetch(`${API_BASE}/segments/at-risk`).then(r => r.json()),
-      fetch(`${API_BASE}/dispatches`).then(r => r.json()),
-      fetch(`${API_BASE}/shipments`).then(r => r.json()),
-      fetch(`${API_BASE}/vehicles/live`).then(r => r.json()),
-      fetch(`${API_BASE}/depots`).then(r => r.json()),
-      fetch(`${API_BASE}/alerts`).then(r => r.json()),
-      fetch(`${API_BASE}/track-record`).then(r => r.json()),
-      fetch(`${API_BASE}/audit`).then(r => r.json()),
-      fetch(`${API_BASE}/automation/status`).then(r => r.json()),
-      fetch(`${API_BASE}/coverage`).then(r => r.json())
+    const [habRes, segRes, dispRes, shipRes, vehRes, depRes, altRes, trRes, audRes, autoRes, covRes, fcRes] = await Promise.allSettled([
+      getJson("/habitations"),
+      getJson("/segments/at-risk"),
+      getJson("/dispatches"),
+      getJson("/shipments"),
+      getJson("/vehicles/live"),
+      getJson("/depots"),
+      getJson("/alerts"),
+      getJson("/track-record"),
+      getJson("/audit"),
+      getJson("/automation/status"),
+      getJson("/coverage"),
+      getJson("/forecast")
     ]);
 
-    if (habRes.status === "fulfilled" && habRes.value.features) habitationsData = habRes.value.features;
-    if (segRes.status === "fulfilled" && segRes.value.features) atRiskSegmentsData = segRes.value.features;
-    if (shipRes.status === "fulfilled" && Array.isArray(shipRes.value)) shipmentsData = shipRes.value;
-    if (vehRes.status === "fulfilled" && Array.isArray(vehRes.value)) vehiclesData = vehRes.value;
-    if (depRes.status === "fulfilled" && Array.isArray(depRes.value)) depotsData = depRes.value;
-    if (altRes.status === "fulfilled" && Array.isArray(altRes.value)) alertsData = altRes.value;
-    if (trRes.status === "fulfilled") trackRecordData = trRes.value;
-    if (audRes.status === "fulfilled" && Array.isArray(audRes.value)) auditData = audRes.value;
-    if (autoRes.status === "fulfilled") automationStatusData = autoRes.value;
-    if (covRes.status === "fulfilled") coverageData = covRes.value;
+    const ok = (res) => res.status === "fulfilled" && res.value && !res.value.error;
+    if (ok(habRes) && habRes.value.features) habitationsData = habRes.value.features;
+    if (ok(segRes) && segRes.value.features) atRiskSegmentsData = segRes.value.features;
+    if (ok(shipRes) && Array.isArray(shipRes.value)) shipmentsData = shipRes.value;
+    if (ok(vehRes) && Array.isArray(vehRes.value)) vehiclesData = vehRes.value;
+    if (ok(depRes) && Array.isArray(depRes.value)) depotsData = depRes.value;
+    if (ok(altRes) && Array.isArray(altRes.value)) alertsData = altRes.value;
+    if (ok(trRes)) trackRecordData = trRes.value;
+    if (ok(audRes) && Array.isArray(audRes.value)) auditData = audRes.value;
+    if (ok(autoRes)) automationStatusData = autoRes.value;
+    if (ok(covRes)) coverageData = covRes.value;
+    if (ok(fcRes) && Array.isArray(fcRes.value.summary)) forecastData = fcRes.value;
 
-    if (dispRes.status === "fulfilled" && Array.isArray(dispRes.value)) {
+    habById = new Map(habitationsData.map(f => [f.properties && f.properties.id, f]));
+    segById = new Map(atRiskSegmentsData.map(f => [f.properties && f.properties.segment_id, f]));
+
+    if (ok(dispRes) && Array.isArray(dispRes.value)) {
       dispatchesData = dispRes.value;
-      // Map backend dispatches to liveDecisions format for the UI
-      liveDecisions = dispatchesData.map(d => ({
-        id: `DEC_${d.id}`,
-        db_id: d.id,
-        village_id: d.village_id,
-        village_name: d.village_name || 'Unknown Village',
-        district: "Assigned District", // Can be enriched from habitationsData if needed
-        cutoff_hours: 24, // Mocking these UI-specific fields if absent from dispatch endpoint
-        cutoff_status: "cutoff_predicted",
-        risk_level: d.tier === "CRITICAL" ? "Critical Cutoff" : "High Risk",
-        severity_class: d.tier === "CRITICAL" ? "critical" : "high-risk",
-        current_vri: 45.0, 
-        recommended_commodity: "Relief Supplies",
-        recommended_units: d.units_required || d.units_shipped,
-        source_depot: d.depot_name || `Depot ${d.depot_id}`,
-        corridor_route: "Determined by routing engine",
-        latest_departure: "Today",
-        confidence: 85,
-        track_record_stat: "Derived from model",
-        reasoning: d.reasoning,
-        status: "pending", 
-        terrain_slope: "Data available in layers",
-        landslide_class: "Pending",
-        travel_time_now: "45 min",
-        travel_time_after: "120 min",
-        alternate_route: "Check Routes View"
-      }));
+      liveDecisions = dispatchesData.map(buildDecision).sort(compareDecisions);
     }
 
+    // The API counts as reachable if any of the core datasets came back.
+    apiOnline = [habRes, segRes, dispRes].some(ok);
+    if (apiOnline) lastSyncAt = new Date();
   } catch (err) {
     console.warn("API Fetch error, falling back to initialized datasets:", err);
+    apiOnline = false;
+  } finally {
+    syncInFlight = false;
   }
 
+  renderSyncStatus();
   renderOperationalMetrics();
   renderWorklistDecisions();
   renderActiveCorridorRisks();
@@ -904,9 +2174,80 @@ async function fetchAllData() {
   renderAuditTrailView();
   renderTrackRecordView();
   renderAutomationStatus();
+  renderCopilotSummary();
+  renderMapFilterCounts();
   fetchSubmittedFieldReports();
-  if (typeof window.updateMapLayers === 'function') window.updateMapLayers();
+  safeUpdateMapLayers();
+  computeAllDataBounds();
+  if (map) {
+    // First data load frames the map; later refreshes keep the officer's view.
+    applyMapContext(currentMapContext, { fit: !mapFramedWithData });
+    mapFramedWithData = true;
+  }
   initAnalyticsCharts();
+}
+
+// ---------- Sync pill + offline banner ----------
+function relTime(when) {
+  if (!when) return "";
+  const t = when instanceof Date ? when.getTime() : new Date(when).getTime();
+  if (!Number.isFinite(t)) return "";
+  const s = Math.max(0, Math.round((Date.now() - t) / 1000));
+  if (s < 10) return "just now";
+  if (s < 60) return `${s}s ago`;
+  const m = Math.round(s / 60);
+  if (m < 60) return `${m} min ago`;
+  const h = Math.round(m / 60);
+  if (h < 48) return `${h} h ago`;
+  return `${Math.round(h / 24)} days ago`;
+}
+
+function renderSyncStatus() {
+  const pill = document.getElementById("sync-status");
+  const text = document.getElementById("sync-status-text");
+  const refresh = document.getElementById("btn-refresh-data");
+  const banner = document.getElementById("offline-banner");
+  const bannerText = document.getElementById("offline-banner-text");
+
+  if (refresh) {
+    refresh.classList.toggle("spinning", syncInFlight);
+    refresh.disabled = syncInFlight;
+  }
+  if (pill && text) {
+    let state, label;
+    if (apiOnline === null) { state = "pending"; label = "Connecting…"; }
+    else if (apiOnline) { state = "live"; label = `Live · ${relTime(lastSyncAt)}`; }
+    else { state = "offline"; label = lastSyncAt ? `Offline · data ${relTime(lastSyncAt)}` : "Offline"; }
+    pill.className = `pill-prov sync-pill ${state}`;
+    text.textContent = syncInFlight && apiOnline !== null ? "Refreshing…" : label;
+    pill.title = lastSyncAt ? `Last successful refresh: ${lastSyncAt.toLocaleTimeString()}` : "No data loaded from the API yet";
+  }
+  if (banner) {
+    banner.classList.toggle("hidden", apiOnline !== false);
+    if (bannerText) {
+      bannerText.textContent = lastSyncAt
+        ? `Showing data from ${relTime(lastSyncAt)}. Retrying every 30 seconds.`
+        : `Showing built-in demo data until ${API_BASE} responds. Retrying every 30 seconds.`;
+    }
+  }
+}
+
+function initSyncControls() {
+  const refresh = document.getElementById("btn-refresh-data");
+  if (refresh) refresh.addEventListener("click", () => fetchAllData());
+  const retry = document.getElementById("btn-offline-retry");
+  if (retry) retry.addEventListener("click", () => fetchAllData());
+  setInterval(renderSyncStatus, 5000);
+}
+
+// A bad row in one dataset must not take the charts or the rest of the page down with it.
+function safeUpdateMapLayers() {
+  if (typeof window.updateMapLayers !== "function") return;
+  try {
+    window.updateMapLayers();
+  } catch (err) {
+    console.warn("Map layer update failed:", err);
+  }
 }
 
 function renderOperationalMetrics() {
@@ -915,7 +2256,8 @@ function renderOperationalMetrics() {
   const critsEl = document.getElementById("stat-critical-disruptions");
   const dispEl = document.getElementById("stat-active-dispatches");
 
-  if (habsEl && coverageData) {
+  // /coverage returns {error} when the database is down.
+  if (habsEl && coverageData && typeof coverageData.habitations_count === "number") {
     habsEl.textContent = coverageData.habitations_count.toLocaleString();
   }
 
@@ -933,16 +2275,205 @@ function renderOperationalMetrics() {
     const count = shipmentsData.filter(s => s.status === "IN TRANSIT" || s.status === "DISPATCHED").length;
     dispEl.textContent = count.toLocaleString();
   }
+
+  // Sidebar / top-bar counters follow the live data
+  setBadge("nav-badge-alerts", alertsData.length);
+  setBadge("topbar-alert-count", alertsData.length);
+  setBadge("nav-badge-shipments", shipmentsData.length);
+}
+
+function setBadge(id, count) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = count;
+  el.style.display = count > 0 ? "" : "none";
 }
 
 // ====================================================
 // 5. WORKLIST-FIRST OPERATIONAL DECISIONS ENGINE
 // ====================================================
+// Officer actions (approve / change / reject) are kept here so the 30-second
+// refresh, which rebuilds every card from /dispatches, doesn't undo them.
+const decisionLocalState = {};
+const OVERVIEW_DECISION_LIMIT = 5;
+
+function rememberDecision(dec) {
+  decisionLocalState[dec.id] = {
+    status: dec.status,
+    reject_reason: dec.reject_reason,
+    reject_notes: dec.reject_notes,
+    recommended_units: dec.recommended_units,
+    source_depot: dec.source_depot,
+    corridor_route: dec.corridor_route,
+    latest_departure: dec.latest_departure
+  };
+}
+
+// The pipeline has written "Pre-positioned 12t 12t ration packs" (quantity
+// repeated inside the cargo name); show it once.
+function cleanReasoning(text) {
+  return String(text || "").replace(/\b(\d+(?:\.\d+)?t) \1\b/gi, "$1");
+}
+
+function parseReasoning(text) {
+  const t = String(text || "");
+  const num = (re) => {
+    const m = re.exec(t);
+    return m ? parseFloat(m[1]) : null;
+  };
+  const cargo = /Pre-positioned (\d+(?:\.\d+)?)t (?:\d+(?:\.\d+)?t )?(.+?) to /i.exec(t);
+  return {
+    closure: num(/probability (\d(?:\.\d+)?)/i),
+    confidence: num(/Confidence (\d(?:\.\d+)?)/i),
+    vriProjected: num(/VRI projected at (\d+(?:\.\d+)?)/i),
+    cutoffWithin: num(/within (\d+(?:\.\d+)?) hours/i),
+    qty: cargo ? parseFloat(cargo[1]) : null,
+    commodity: cargo ? cargo[2] : null
+  };
+}
+
+function capitalize(s) {
+  s = String(s || "");
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function formatMinutes(min) {
+  const n = Number(min);
+  if (!Number.isFinite(n)) return "—";
+  if (n < 60) return `${Math.round(n)} min`;
+  const h = Math.floor(n / 60);
+  const m = Math.round(n % 60);
+  return m ? `${h}h ${m}m` : `${h}h`;
+}
+
+function formatLeaveBy(hoursFromNow) {
+  const d = new Date(Date.now() + hoursFromNow * 3600 * 1000);
+  return d.toLocaleString("en-IN", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+function segmentLines(seg) {
+  const g = seg && seg.geometry;
+  if (!g) return [];
+  if (g.type === "LineString") return [g.coordinates];
+  if (g.type === "MultiLineString") return g.coordinates;
+  return [];
+}
+
+// Closest at-risk road to a point (equirectangular distance; fine at this scale).
+function nearestSegment(lon, lat) {
+  let best = null;
+  let bestD = Infinity;
+  const k = Math.cos(lat * Math.PI / 180);
+  for (const seg of atRiskSegmentsData || []) {
+    for (const line of segmentLines(seg)) {
+      for (const c of line) {
+        const dx = (c[0] - lon) * k;
+        const dy = c[1] - lat;
+        const d = dx * dx + dy * dy;
+        if (d < bestD) { bestD = d; best = seg; }
+      }
+    }
+  }
+  return best ? { seg: best, km: Math.sqrt(bestD) * 111.32 } : null;
+}
+
+function roadLabel(p) {
+  if (!p) return "Road segment";
+  const road = p.road_type ? `${capitalize(p.road_type)} road` : "Road segment";
+  const district = districtLabel(p.district_id);
+  return district ? `${road} · ${district}` : road;
+}
+
+// Roads further than this aren't really "the village's road"; say so plainly.
+const NEAR_ROAD_KM = 25;
+
+function nearRoadIsLocal(dec) {
+  return dec.nearest_segment_km != null && dec.nearest_segment_km <= NEAR_ROAD_KM;
+}
+
+function buildDecision(d) {
+  const hab = habById.get(d.village_id);
+  const hp = hab ? hab.properties : {};
+  const r = parseReasoning(d.reasoning);
+
+  const vri = Number.isFinite(Number(hp.vri)) ? Number(hp.vri) : r.vriProjected;
+  const cutoff = Number.isFinite(Number(hp.hours_until_cutoff)) ? Number(hp.hours_until_cutoff) : (r.cutoffWithin != null ? r.cutoffWithin : 48);
+  const p = r.closure;
+  const critical = (p != null && p >= 0.5) || (vri != null && vri < 30) || /CRITICAL/i.test(d.tier || "");
+  const tNow = Number(hp.travel_time_now_min);
+  const tAfter = Number(hp.travel_time_after_min);
+  const delta = Number(hp.egress_delta_min);
+  const leaveIn = Math.max(0, cutoff - (Number.isFinite(tAfter) ? tAfter / 60 : 0));
+  const tr = trackRecordData || {};
+
+  const near = hab ? nearestSegment(hab.geometry.coordinates[0], hab.geometry.coordinates[1]) : null;
+  const np = near ? near.seg.properties : null;
+
+  const dec = {
+    id: `DEC_${d.id}`,
+    db_id: d.id,
+    village_id: d.village_id,
+    village_name: d.village_name || hp.name || "Unknown village",
+    district: districtLabel(hp.district_id) || "—",
+    population: hp.population,
+    cutoff_hours: cutoff,
+    cutoff_status: hp.cutoff_status || "cutoff_predicted",
+    closure_probability: p,
+    risk_level: critical ? "Critical" : "High risk",
+    severity_class: critical ? "critical" : "high-risk",
+    vri_value: vri,
+    current_vri: vri != null ? Number(vri).toFixed(1) : "—",
+    recommended_commodity: r.commodity ? r.commodity.toLowerCase() : "relief supplies",
+    recommended_units: d.units_required || d.units_shipped || r.qty,
+    source_depot: d.depot_name || d.depot_id || "—",
+    depot_id: d.depot_id,
+    corridor_route: "Fastest open road from the depot",
+    latest_departure: formatLeaveBy(leaveIn),
+    confidence: r.confidence != null ? Math.round(r.confidence * 100) : null,
+    tier: d.tier,
+    track_record_stat: tr.total_predictions ? `${tr.confirmed_correct} / ${tr.total_predictions} recent predictions correct` : "—",
+    reasoning: cleanReasoning(d.reasoning),
+    created_at: d.created_at,
+    status: "pending",
+    nearest_segment_id: np ? np.segment_id : null,
+    nearest_segment_km: near ? near.km : null,
+    terrain_slope: np && np.slope_deg != null ? `${Number(np.slope_deg).toFixed(1)}° slope on the nearest at-risk road` : "—",
+    landslide_class: np ? `Landslide class ${np.landslide_class ?? "—"} · ${Math.round(np.closure_probability * 100)}% closure risk` : "—",
+    travel_time_now: formatMinutes(tNow),
+    travel_time_after: formatMinutes(tAfter),
+    alternate_route: Number.isFinite(delta) && delta > 0 ? `Alternate route adds ${formatMinutes(delta)}` : "No extra delay on the alternate route"
+  };
+  return Object.assign(dec, decisionLocalState[dec.id] || {});
+}
+
+// Pending first, then soonest cutoff, highest closure risk, lowest VRI.
+function compareDecisions(a, b) {
+  const pa = a.status === "pending" ? 0 : 1;
+  const pb = b.status === "pending" ? 0 : 1;
+  if (pa !== pb) return pa - pb;
+  if (a.cutoff_hours !== b.cutoff_hours) return a.cutoff_hours - b.cutoff_hours;
+  const ca = a.closure_probability ?? 0;
+  const cb = b.closure_probability ?? 0;
+  if (ca !== cb) return cb - ca;
+  return (a.vri_value ?? 100) - (b.vri_value ?? 100);
+}
+
+function filteredDecisions() {
+  const all = [...liveDecisions].sort(compareDecisions);
+  switch (currentWorklistFilter) {
+    case "critical": return all.filter(d => d.severity_class === "critical" || d.cutoff_hours <= 24);
+    case "high-risk": return all.filter(d => d.severity_class === "high-risk");
+    case "cutoff-24": return all.filter(d => d.cutoff_hours <= 24);
+    case "cutoff-48": return all.filter(d => d.cutoff_hours <= 48);
+    case "completed": return all.filter(d => d.status !== "pending");
+    default: return all;
+  }
+}
+
 function renderWorklistDecisions() {
   const container = document.getElementById("decision-cards-container");
   const dedicatedContainer = document.getElementById("dedicated-decisions-container");
   const heroCount = document.getElementById("worklist-hero-count");
-  const navBadge = document.getElementById("nav-badge-decisions");
 
   if (!container && !dedicatedContainer) return;
 
@@ -950,33 +2481,35 @@ function renderWorklistDecisions() {
   if (heroCount) {
     heroCount.textContent = `${pendingCount} village${pendingCount === 1 ? '' : 's'} need a decision today`;
   }
-  if (navBadge) {
-    navBadge.textContent = pendingCount;
-    navBadge.style.display = pendingCount > 0 ? "inline-block" : "none";
-  }
+  setBadge("nav-badge-decisions", pendingCount);
 
-  // Filter decisions
-  let filtered = liveDecisions;
-  if (currentWorklistFilter === "critical") {
-    filtered = liveDecisions.filter(d => d.risk_level.includes("Critical") || d.cutoff_hours <= 24);
-  } else if (currentWorklistFilter === "high-risk") {
-    filtered = liveDecisions.filter(d => d.risk_level.includes("High"));
-  } else if (currentWorklistFilter === "cutoff-24") {
-    filtered = liveDecisions.filter(d => d.cutoff_hours <= 24);
-  } else if (currentWorklistFilter === "cutoff-48") {
-    filtered = liveDecisions.filter(d => d.cutoff_hours <= 48);
-  } else if (currentWorklistFilter === "completed") {
-    filtered = liveDecisions.filter(d => d.status !== "pending");
-  } else {
-    // "all" shows pending first, then completed
-    filtered = liveDecisions;
-  }
+  const filtered = filteredDecisions();
+  const empty = `<div class="empty-panel">No decisions match this filter.</div>`;
 
-  const html = filtered.map(d => generateDecisionCardHTML(d)).join("");
-  if (container) container.innerHTML = html;
-  if (dedicatedContainer) dedicatedContainer.innerHTML = html;
+  if (container) {
+    const top = filtered.slice(0, OVERVIEW_DECISION_LIMIT);
+    const more = filtered.length > top.length
+      ? `<a class="worklist-more" href="#/decisions">View all ${filtered.length} decisions &rarr;</a>`
+      : "";
+    container.innerHTML = top.length ? top.map(d => generateDecisionCardHTML(d)).join("") + more : empty;
+  }
+  if (dedicatedContainer) {
+    dedicatedContainer.innerHTML = filtered.length ? filtered.map(d => generateDecisionCardHTML(d)).join("") : empty;
+  }
 
   bindDecisionButtons();
+}
+
+// Jump to a decision card on the Today's Decisions page and flash it.
+function openDecision(id) {
+  if (window.location.hash !== "#/decisions") window.location.hash = "#/decisions";
+  setTimeout(() => {
+    const card = document.querySelector(`#dedicated-decisions-container [data-card="${id}"]`);
+    if (!card) return;
+    card.scrollIntoView({ behavior: "smooth", block: "center" });
+    card.classList.add("flash");
+    setTimeout(() => card.classList.remove("flash"), 1600);
+  }, 120);
 }
 
 function generateDecisionCardHTML(d) {
@@ -987,38 +2520,40 @@ function generateDecisionCardHTML(d) {
 
   let statusBadge = "";
   if (isApproved) {
-    statusBadge = `<span class="rec-pill" style="background:#065F46; color:#34D399; font-weight:700;">✓ APPROVED &amp; DISPATCH QUEUED</span>`;
+    statusBadge = `<span class="status-tag green">${icon("check", 12)} Approved &amp; dispatch queued</span>`;
   } else if (isModified) {
-    statusBadge = `<span class="rec-pill" style="background:#1E40AF; color:#93C5FD; font-weight:700;">✏️ MODIFIED (OFFICER OVERRIDE)</span>`;
+    statusBadge = `<span class="status-tag blue">${icon("edit", 12)} Modified (officer override)</span>`;
   } else if (isRejected) {
-    statusBadge = `<span class="rec-pill" style="background:#7F1D1D; color:#FCA5A5; font-weight:700;">🛑 REJECTED: ${d.reject_reason || 'Officer Override'}</span>`;
+    statusBadge = `<span class="status-tag red">${icon("x", 12)} Rejected: ${d.reject_reason || 'Officer override'}</span>`;
   }
 
   const t = I18N[currentLang]?.actions || I18N.en.actions;
 
   return `
-    <div class="decision-card ${d.severity_class} ${isApproved ? 'acted-approved' : ''} ${isRejected ? 'acted-rejected' : ''}" id="card-${d.id}">
+    <div class="decision-card ${d.severity_class} ${isApproved ? 'acted-approved' : ''} ${isRejected ? 'acted-rejected' : ''}" data-card="${d.id}">
       <div class="decision-card-top-row">
         <div class="decision-village-group">
-          <span class="decision-village-name">${d.village_name}</span>
-          <span class="decision-district-tag">${d.district}</span>
+          <span class="decision-village-name">${escapeHtml(d.village_name)}</span>
+          <span class="decision-district-tag">${escapeHtml(d.district)}</span>
+          ${d.population ? `<span class="decision-meta">Pop. ${Number(d.population).toLocaleString()}</span>` : ""}
           ${statusBadge}
         </div>
         <div class="countdown-badge ${d.cutoff_hours > 24 ? 'amber' : ''}">
-          <span>⏱️</span>
-          <strong>${d.cutoff_hours}h until predicted cutoff</strong>
+          ${icon("clock", 14)}
+          <strong>${d.cutoff_hours}h to predicted cutoff</strong>
         </div>
       </div>
 
       <div class="decision-recommendation-box">
         <div class="rec-title-row">
           <div class="rec-action-text">
-            📦 Send ${d.recommended_units}t ${d.recommended_commodity}
+            ${icon("package", 16)} Send ${d.recommended_units}t ${escapeHtml(d.recommended_commodity)}
           </div>
           <div class="rec-meta-pills">
-            <span class="rec-pill">Hub: ${d.source_depot}</span>
-            <span class="rec-pill">Route: ${d.corridor_route}</span>
-            <span class="rec-pill">VRI: ${d.current_vri}</span>
+            <span class="rec-pill">From ${escapeHtml(d.source_depot)}</span>
+            <span class="rec-pill">VRI ${d.current_vri}</span>
+            ${d.closure_probability != null ? `<span class="rec-pill">Closure ${Math.round(d.closure_probability * 100)}%</span>` : ""}
+            ${d.tier ? `<span class="rec-pill tier">${escapeHtml(capitalize(String(d.tier).toLowerCase()))}</span>` : ""}
           </div>
         </div>
 
@@ -1027,46 +2562,244 @@ function generateDecisionCardHTML(d) {
         </div>
 
         <div class="rec-trust-row">
-          <span>Model Confidence: <strong>${d.confidence}%</strong></span>
-          <span>Historical Track Record: <strong>${d.track_record_stat}</strong></span>
-          <span>Departure Deadline: <strong>${d.latest_departure}</strong></span>
+          <span>Model confidence: <strong>${d.confidence != null ? d.confidence + "%" : "—"}</strong></span>
+          <span>Track record: <strong>${escapeHtml(d.track_record_stat)}</strong></span>
+          <span>Leave by: <strong>${escapeHtml(d.latest_departure)}</strong></span>
+          ${d.created_at ? `<span>Generated: <strong>${relTime(d.created_at)}</strong></span>` : ""}
         </div>
       </div>
 
       <div class="decision-actions-row">
         <div class="decision-primary-buttons">
           <button class="btn-dec approve" data-action="approve" data-id="${d.id}" ${!isPending ? 'disabled' : ''}>
-            ✓ ${t.approve}
+            ${icon("check")} ${t.approve}
           </button>
           <button class="btn-dec change" data-action="change" data-id="${d.id}" ${!isPending ? 'disabled' : ''}>
-            ✏️ ${t.change}
+            ${icon("edit")} ${t.change}
           </button>
           <button class="btn-dec reject" data-action="reject" data-id="${d.id}" ${!isPending ? 'disabled' : ''}>
-            ✕ ${t.reject}
+            ${icon("x")} ${t.reject}
           </button>
         </div>
 
         <div class="decision-secondary-buttons">
           <button class="btn-sec-link" data-action="evidence" data-id="${d.id}">
-            📊 ${t.viewEvidence}
+            ${icon("chart")} ${t.viewEvidence}
           </button>
           <button class="btn-sec-link" data-action="route" data-id="${d.id}">
-            🛣️ ${t.viewRoute}
+            ${icon("route")} ${t.viewRoute}
           </button>
           <button class="btn-sec-link" data-action="map" data-id="${d.id}">
-            🗺️ View on Map
+            ${icon("map")} View on map
+          </button>
+          <button class="btn-sec-link ai" data-action="explain" data-id="${d.id}">
+            ${icon("sparkle")} Explain in plain language
           </button>
         </div>
       </div>
+      <div class="ai-briefing ${briefingHtml(d.id) ? "" : "hidden"}" data-briefing="${d.id}" aria-live="polite">${briefingHtml(d.id)}</div>
     </div>
   `;
+}
+
+// ---------- Offline AI (runs on the DHARA server: notes classifier + local llama) ----------
+async function aiPost(path, text) {
+  const res = await fetch(`${AI_BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text })
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+// The plain-language explanation is built in the browser from the decision's
+// own numbers, so it works instantly with no AI, no server and no internet.
+// When the local llama model is running, its rewording is added underneath.
+function plainBriefing(d) {
+  const hours = Number(d.cutoff_hours);
+  const when = !Number.isFinite(hours) ? "soon"
+    : hours <= 6 ? `within ${Math.max(1, Math.round(hours))} hours`
+    : hours < 24 ? `in about ${Math.round(hours)} hours, so today`
+    : hours < 48 ? `in about ${Math.round(hours)} hours, so by tomorrow`
+    : `in about ${Math.round(hours / 24)} days`;
+  const chance = d.closure_probability != null ? ` DHARA puts the chance of closure at ${Math.round(d.closure_probability * 100)}%.` : "";
+  const people = Number(d.population) > 0 ? ` About ${Number(d.population).toLocaleString("en-IN")} people live there.` : "";
+
+  const lines = [
+    `<b>What's happening:</b> The road into ${escapeHtml(d.village_name)} is likely to close ${when}.${chance}${people}`
+  ];
+
+  const now = d.travel_time_now, after = d.travel_time_after;
+  if (/severed|no motor/i.test(after || "")) {
+    lines.push(`<b>Why it matters:</b> Once it closes, trucks can't get there at all. Today the drive takes ${escapeHtml(now)}.`);
+  } else if (now && after && now !== "—" && after !== "—" && now !== after) {
+    lines.push(`<b>Why it matters:</b> The drive takes ${escapeHtml(now)} today and about ${escapeHtml(after)} once the road closes.`);
+  }
+
+  const units = d.recommended_units ? `${d.recommended_units} tonnes of ` : "";
+  lines.push(`<b>What DHARA suggests:</b> Send ${units}${escapeHtml(String(d.recommended_commodity || "relief supplies").toLowerCase())} from ${escapeHtml(d.source_depot)}. The truck should leave by <b>${escapeHtml(d.latest_departure)}</b> so it arrives before the road closes.`);
+
+  const conf = Number(d.confidence);
+  if (Number.isFinite(conf)) {
+    const sure = conf >= 85 ? "confident" : conf >= 70 ? "fairly confident" : "not very sure, so check the evidence before approving";
+    lines.push(`<b>How sure it is:</b> ${conf}%, meaning the model is ${sure}.`);
+  }
+
+  return `<span class="ai-tag muted">PLAIN LANGUAGE · NO AI NEEDED</span>
+    <ul class="plain-briefing">${lines.map(l => `<li>${l}</li>`).join("")}</ul>
+    <small>Written from the numbers on this card. You can still approve, change or reject it.</small>`;
+}
+
+// Briefings survive the 30-second worklist refresh, which rebuilds every card.
+// Each entry is { plain, ai } where ai is null, "loading" or finished HTML.
+const briefingCache = {};
+const briefingPending = new Set();
+
+function briefingHtml(id) {
+  const b = briefingCache[id];
+  if (!b) return "";
+  let ai = "";
+  if (b.ai === "loading") {
+    ai = `<div class="ai-extra loading"><span class="ai-tag">LOCAL AI</span><span>Also rewording it with ${escapeHtml(localAiModel)}. This can take up to 30 seconds.</span></div>`;
+  } else if (b.ai) {
+    ai = `<div class="ai-extra">${b.ai}</div>`;
+  }
+  return b.plain + ai;
+}
+
+// The same decision can be on screen twice (Overview + Today's Decisions).
+function setBriefingBox(id) {
+  const html = briefingHtml(id);
+  document.querySelectorAll(`[data-briefing="${id}"]`).forEach(box => {
+    box.innerHTML = html;
+    box.classList.toggle("hidden", !html);
+  });
+}
+
+async function explainDecision(id) {
+  const dec = liveDecisions.find(x => x.id === id);
+  if (!dec) return;
+  if (briefingCache[id]) {
+    delete briefingCache[id];
+    setBriefingBox(id);
+    return;
+  }
+
+  // Show the plain version now; only then wait for the page-load AI check if
+  // it's still running on a slow server.
+  const entry = { plain: plainBriefing(dec), ai: localAiOn || !localAiChecked ? "loading" : null };
+  briefingCache[id] = entry;
+  setBriefingBox(id);
+  if (!localAiChecked) {
+    await localAiCheck;
+    if (!localAiOn) {
+      entry.ai = null;
+      if (briefingCache[id] === entry) setBriefingBox(id);
+    }
+  }
+  if (!localAiOn || briefingPending.has(id) || briefingCache[id] !== entry) return;
+
+  briefingPending.add(id);
+  try {
+    const out = await aiPost("/api/ai/explain", dec.reasoning);
+    entry.ai = out.llm_used
+      ? `<span class="ai-tag">LOCAL AI · ${escapeHtml(localAiModel)}</span><p>${escapeHtml(out.briefing)}</p>
+         <small>Generated on the DHARA server with no internet. The audit log keeps the original wording.</small>`
+      : null;
+  } catch (err) {
+    entry.ai = null;
+  } finally {
+    briefingPending.delete(id);
+  }
+  // Ignore the result if the officer closed the explanation in the meantime.
+  if (briefingCache[id] === entry) setBriefingBox(id);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+let localAiModel = "llama3.2:1b";
+let localAiOn = false;
+let localAiChecked = false;
+let localAiCheck = Promise.resolve();
+function checkLocalAi() {
+  localAiCheck = runLocalAiCheck().finally(() => { localAiChecked = true; });
+  return localAiCheck;
+}
+
+async function runLocalAiCheck() {
+  const pill = document.getElementById("pill-local-ai");
+  const text = document.getElementById("pill-local-ai-text");
+  try {
+    const res = await fetch(`${AI_BASE}/api/ai/status`, { signal: AbortSignal.timeout(8000) });
+    const s = await res.json();
+    localAiModel = s.llm_model || localAiModel;
+    localAiOn = !!s.local_llm;
+    if (!pill || !text) return;
+    pill.className = `pill-prov ${s.local_llm ? "ai-on" : "ai-off"}`;
+    text.textContent = s.local_llm ? "LOCAL AI: ON" : "LOCAL AI: NOTES ONLY";
+    pill.title = s.local_llm
+      ? `Offline AI on the DHARA server: notes classifier + ${localAiModel} briefings`
+      : "Notes classifier available; local llama model is not running";
+  } catch (e) {
+    localAiOn = false;
+    if (!pill || !text) return;
+    pill.className = "pill-prov ai-off";
+    text.textContent = "LOCAL AI: OFF";
+    pill.title = "DHARA web server not reachable";
+  }
+}
+
+const SEVERITY_FROM_AI = { impassable: "CRITICAL", major: "HIGH", minor: "LOW" };
+const HAZARD_LABELS = { landslide: "Landslide", washout: "Washout", tree_fall: "Fallen tree", flooding: "Flooding", subsidence: "Road subsidence" };
+let fieldAiReading = null;
+let fieldAiTimer = null;
+
+function initFieldNoteAi() {
+  const desc = document.getElementById("f-rep-desc");
+  const hint = document.getElementById("f-ai-hint");
+  const severitySelect = document.getElementById("f-rep-severity");
+  if (!desc || !hint || !severitySelect) return;
+
+  const render = () => {
+    if (!fieldAiReading) { hint.classList.add("hidden"); return; }
+    const suggested = SEVERITY_FROM_AI[fieldAiReading.severity];
+    const differs = suggested && suggested !== severitySelect.value;
+    hint.innerHTML = `<span class="ai-tag">OFFLINE AI</span>
+      <span>Your notes read as <b>${HAZARD_LABELS[fieldAiReading.hazard_type]}</b> · severity <b>${fieldAiReading.severity}</b></span>
+      ${differs ? `<button type="button" class="ai-apply" id="f-ai-apply">Set severity to ${suggested}</button>` : ""}`;
+    hint.classList.remove("hidden");
+    const apply = document.getElementById("f-ai-apply");
+    if (apply) apply.onclick = () => { severitySelect.value = suggested; render(); };
+  };
+
+  const classify = async () => {
+    const text = desc.value.trim();
+    if (text.length < 12) { fieldAiReading = null; render(); return; }
+    try {
+      const res = await aiPost("/api/ai/classify-note", text);
+      fieldAiReading = HAZARD_LABELS[res.hazard_type] ? res : null;
+    } catch (e) {
+      fieldAiReading = null; // server unreachable: the form works exactly as before
+    }
+    render();
+  };
+
+  desc.addEventListener("input", () => {
+    clearTimeout(fieldAiTimer);
+    fieldAiTimer = setTimeout(classify, 500);
+  });
+  severitySelect.addEventListener("change", render);
+  classify();
 }
 
 function bindDecisionButtons() {
   // APPROVE Action
   document.querySelectorAll('button[data-action="approve"]').forEach(btn => {
     btn.onclick = async (e) => {
-      const id = e.target.dataset.id;
+      const id = btn.dataset.id;
       const dec = liveDecisions.find(x => x.id === id);
       if (!dec || dec.status !== "pending") return;
 
@@ -1077,6 +2810,7 @@ function bindDecisionButtons() {
       }
 
       dec.status = "approved";
+      rememberDecision(dec);
       renderWorklistDecisions();
       showToast(`✓ Pre-positioning dispatch approved for ${dec.village_name}! Audit log created.`, "success");
       fetchAuditTrail();
@@ -1086,7 +2820,7 @@ function bindDecisionButtons() {
   // CHANGE Action
   document.querySelectorAll('button[data-action="change"]').forEach(btn => {
     btn.onclick = (e) => {
-      const id = e.target.dataset.id;
+      const id = btn.dataset.id;
       const dec = liveDecisions.find(x => x.id === id);
       if (!dec) return;
       openChangeModal(dec);
@@ -1096,7 +2830,7 @@ function bindDecisionButtons() {
   // REJECT Action
   document.querySelectorAll('button[data-action="reject"]').forEach(btn => {
     btn.onclick = (e) => {
-      const id = e.target.dataset.id;
+      const id = btn.dataset.id;
       const dec = liveDecisions.find(x => x.id === id);
       if (!dec) return;
       openRejectModal(dec);
@@ -1106,7 +2840,7 @@ function bindDecisionButtons() {
   // VIEW EVIDENCE Action
   document.querySelectorAll('button[data-action="evidence"]').forEach(btn => {
     btn.onclick = (e) => {
-      const id = e.target.dataset.id;
+      const id = btn.dataset.id;
       const dec = liveDecisions.find(x => x.id === id);
       if (!dec) return;
       openEvidenceModal(dec);
@@ -1116,7 +2850,7 @@ function bindDecisionButtons() {
   // VIEW ROUTE Action
   document.querySelectorAll('button[data-action="route"]').forEach(btn => {
     btn.onclick = (e) => {
-      const id = e.target.dataset.id;
+      const id = btn.dataset.id;
       const dec = liveDecisions.find(x => x.id === id);
       if (!dec) return;
       openRouteModal(dec);
@@ -1125,51 +2859,73 @@ function bindDecisionButtons() {
 
   // VIEW ON MAP Action
   document.querySelectorAll('button[data-action="map"]').forEach(btn => {
-    btn.onclick = (e) => {
-      const id = e.target.dataset.id;
-      const dec = liveDecisions.find(x => x.id === id);
-      if (!dec) return;
-      
-      // Ensure we are on the overview page so the map is visible
-      if (window.location.hash !== "#/overview") {
-        window.location.hash = "#/overview";
-      }
+    btn.onclick = () => showDecisionOnMap(btn.dataset.id);
+  });
 
-      // Find coords
-      if (window.habitationsData && map) {
-        const hab = window.habitationsData.find(h => h.properties.id === dec.village_id);
-        if (hab) {
-          const coords = hab.geometry.coordinates; // [lon, lat]
-          map.setView([coords[1], coords[0]], 12, { animate: true });
-          
-          // Scroll to map
-          document.getElementById('map').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }
-    };
+  // EXPLAIN IN PLAIN LANGUAGE (local llama on the DHARA server)
+  document.querySelectorAll('button[data-action="explain"]').forEach(btn => {
+    btn.onclick = (e) => explainDecision(e.currentTarget.dataset.id);
   });
 
   // Worklist Filter Chips
   document.querySelectorAll(".worklist-filters-row .filter-chip").forEach(chip => {
-    chip.onclick = (e) => {
-      document.querySelectorAll(".worklist-filters-row .filter-chip").forEach(c => c.classList.remove("active"));
-      e.target.classList.add("active");
-      currentWorklistFilter = e.target.dataset.filter;
+    chip.onclick = () => {
+      currentWorklistFilter = chip.dataset.filter;
+      document.querySelectorAll(".worklist-filters-row .filter-chip").forEach(c => {
+        c.classList.toggle("active", c.dataset.filter === currentWorklistFilter);
+      });
       renderWorklistDecisions();
     };
   });
 }
 
+function showDecisionOnMap(id) {
+  const dec = liveDecisions.find(x => x.id === id);
+  if (!dec) return;
+  const hab = habitationsData.find(h => h.properties && h.properties.id === dec.village_id);
+  if (!hab) {
+    showToast(`${dec.village_name} has no mapped location yet.`, "warning");
+    return;
+  }
+  const [lon, lat] = hab.geometry.coordinates;
+  focusMapOn([lat, lon], 12, `<strong>${escapeHtml(dec.village_name)}</strong><br>Recommended: ${escapeHtml(dec.recommended_units)}t ${escapeHtml(dec.recommended_commodity)}<br>From: ${escapeHtml(dec.source_depot)}`);
+}
+
 // ====================================================
 // 6. MODALS IMPLEMENTATION
 // ====================================================
+let evidenceDecisionId = null;
+
+function closeModals() {
+  document.querySelectorAll(".modal-overlay").forEach(m => m.classList.add("hidden"));
+}
+
 function initModals() {
-  // Close buttons
-  document.querySelectorAll(".btn-close-modal, .btn-cancel").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".modal-overlay").forEach(m => m.classList.add("hidden"));
+  // Close: the ✕, Cancel, and every "Close …" footer button
+  document.querySelectorAll(".btn-close-modal, .btn-cancel, #btn-shipment-close-foot, #btn-close-route-foot, #btn-close-auto-foot").forEach(btn => {
+    btn.addEventListener("click", closeModals);
+  });
+
+  // Clicking the dimmed backdrop or pressing Escape closes too
+  document.querySelectorAll(".modal-overlay").forEach(overlay => {
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) closeModals();
     });
   });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeModals();
+      closePalette();
+    }
+  });
+
+  const btnEvidenceMap = document.getElementById("btn-evidence-goto-map");
+  if (btnEvidenceMap) {
+    btnEvidenceMap.addEventListener("click", () => {
+      closeModals();
+      if (evidenceDecisionId) showDecisionOnMap(evidenceDecisionId);
+    });
+  }
 
   // Change Decision Form Submit
   const changeForm = document.getElementById("form-change-decision");
@@ -1190,6 +2946,7 @@ function initModals() {
         dec.source_depot = depot;
         dec.corridor_route = route;
         dec.latest_departure = deadline;
+        rememberDecision(dec);
 
         try {
           await fetch(`${API_BASE}/decisions/${id}/change`, {
@@ -1223,6 +2980,7 @@ function initModals() {
         dec.status = "rejected";
         dec.reject_reason = reason_category;
         dec.reject_notes = free_text;
+        rememberDecision(dec);
 
         try {
           await fetch(`${API_BASE}/decisions/${id}/reject`, {
@@ -1242,13 +3000,16 @@ function initModals() {
     };
   }
 
-  // Automation Modal
-  const btnOpenAuto = document.getElementById("btn-open-automation-modal");
-  if (btnOpenAuto) {
-    btnOpenAuto.onclick = () => {
-      openAutomationModal();
-    };
-  }
+  // Automation Modal (sidebar status card + Overview "How DHARA decides")
+  document.querySelectorAll("[data-open-automation]").forEach(el => {
+    el.addEventListener("click", openAutomationModal);
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        openAutomationModal();
+      }
+    });
+  });
 }
 
 function openChangeModal(dec) {
@@ -1269,30 +3030,36 @@ function openRejectModal(dec) {
 function openEvidenceModal(dec) {
   const content = document.getElementById("evidence-modal-content");
   if (!content) return;
+  evidenceDecisionId = dec.id;
+
+  const seg = dec.nearest_segment_id ? segById.get(dec.nearest_segment_id) : null;
+  const sp = seg ? seg.properties : null;
+  const km = dec.nearest_segment_km != null ? `${dec.nearest_segment_km.toFixed(1)} km from the village` : "";
 
   content.innerHTML = `
-    <div style="display:flex; flex-direction:column; gap:16px; padding:20px;">
-      <div style="background:rgba(37,99,235,0.06); border:1px solid rgba(37,99,235,0.25); padding:16px; border-radius:8px;">
-        <h4 style="color:var(--accent-blue); margin-bottom:6px;">Target Habitation: ${dec.village_name} (${dec.district})</h4>
-        <p style="font-size:13px; color:var(--text-secondary);">Calculated VRI Reachability Index: <strong style="color:var(--text-primary);">${dec.current_vri} / 100</strong> (Cutoff predicted in <strong style="color:var(--text-primary);">${dec.cutoff_hours} hours</strong>)</p>
+    <div class="modal-stack">
+      <div class="modal-panel tone-blue">
+        <h4>${escapeHtml(dec.village_name)} &middot; ${escapeHtml(dec.district)}</h4>
+        <p>Reachability index (VRI): <strong>${dec.current_vri} / 100</strong> &middot; predicted cutoff window <strong>${dec.cutoff_hours} hours</strong>${dec.closure_probability != null ? ` &middot; road closure probability <strong>${Math.round(dec.closure_probability * 100)}%</strong>` : ""}</p>
       </div>
 
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <div style="background:var(--bg-main); padding:14px; border-radius:8px; border:1px solid var(--border-color);">
-          <strong style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">TERRAIN &amp; SLOPE PROFILE</strong>
-          <div style="font-size:14px; font-weight:700; color:var(--text-primary);">${dec.terrain_slope}</div>
-          <span style="font-size:12px; color:var(--accent-red);">${dec.landslide_class}</span>
+      <div class="modal-grid">
+        <div class="modal-panel">
+          <span class="modal-label">${nearRoadIsLocal(dec) ? "Nearest at-risk road" : `No at-risk road within ${NEAR_ROAD_KM} km · closest`}</span>
+          <div class="modal-value">${sp ? escapeHtml(roadLabel(sp)) : "—"}</div>
+          <span class="modal-note text-red">${escapeHtml(dec.landslide_class)}</span>
+          <span class="modal-note">${escapeHtml(dec.terrain_slope)}${km ? ` &middot; ${km}` : ""}</span>
         </div>
-        <div style="background:var(--bg-main); padding:14px; border-radius:8px; border:1px solid var(--border-color);">
-          <strong style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">EGRESS DELTA &amp; ACCESS DELAY</strong>
-          <div style="font-size:14px; font-weight:700; color:var(--text-primary);">Now: ${dec.travel_time_now} &rarr; Post-Closure: ${dec.travel_time_after}</div>
-          <span style="font-size:12px; color:var(--accent-amber);">Alternate: ${dec.alternate_route}</span>
+        <div class="modal-panel">
+          <span class="modal-label">Travel time from the village</span>
+          <div class="modal-value">Now ${dec.travel_time_now} &rarr; after closure ${dec.travel_time_after}</div>
+          <span class="modal-note text-amber">${escapeHtml(dec.alternate_route)}</span>
         </div>
       </div>
 
-      <div style="background:var(--bg-main); padding:16px; border-radius:8px; border:1px solid var(--border-color);">
-        <strong style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:8px;">DHARA MODULE 7 AUDIT REASONING</strong>
-        <p style="font-size:13.5px; line-height:1.5; color:var(--text-secondary);">"${dec.reasoning}"</p>
+      <div class="modal-panel">
+        <span class="modal-label">Decision agent reasoning (audit log)</span>
+        <p class="modal-quote">"${escapeHtml(dec.reasoning)}"</p>
       </div>
     </div>
   `;
@@ -1304,70 +3071,93 @@ function openRouteModal(dec) {
   const content = document.getElementById("route-modal-content");
   if (!content) return;
 
+  const seg = dec.nearest_segment_id ? segById.get(dec.nearest_segment_id) : null;
+  const sp = seg ? seg.properties : null;
+
   content.innerHTML = `
-    <div style="display:flex; flex-direction:column; gap:16px; padding:20px;">
-      <div style="background:var(--bg-main); border:1px solid var(--border-color); padding:16px; border-radius:8px;">
-        <h4 style="color:var(--accent-blue); font-size:16px; margin-bottom:8px;">Primary Supply Corridor: ${dec.corridor_route}</h4>
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; font-size:12.5px; color:var(--text-secondary);">
-          <div>Origin Depot: <strong style="color:var(--text-primary);">${dec.source_depot}</strong></div>
-          <div>Destination: <strong style="color:var(--text-primary);">${dec.village_name}</strong></div>
-          <div>Normal Transit: <strong style="color:var(--text-primary);">${dec.travel_time_now}</strong></div>
+    <div class="modal-stack">
+      <div class="modal-panel">
+        <h4>${escapeHtml(dec.source_depot)} &rarr; ${escapeHtml(dec.village_name)}</h4>
+        <div class="modal-grid three">
+          <div><span class="modal-label">From</span><div class="modal-value">${escapeHtml(dec.source_depot)}</div></div>
+          <div><span class="modal-label">To</span><div class="modal-value">${escapeHtml(dec.village_name)} (${escapeHtml(dec.district)})</div></div>
+          <div><span class="modal-label">Leave by</span><div class="modal-value">${escapeHtml(dec.latest_departure)}</div></div>
         </div>
       </div>
 
-      <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.25); padding:16px; border-radius:8px;">
-        <h4 style="color:var(--accent-red); font-size:14px; margin-bottom:6px;">⚠️ Threatened Road Segments</h4>
-        <p style="font-size:13px; color:var(--text-secondary); line-height:1.5;">Km 38 to Km 44 on ${dec.corridor_route} has an active 0.78 closure probability. Road geometry passes beneath saturated 28° shale slope with high debris vulnerability.</p>
+      <div class="modal-panel tone-red">
+        <h4>${sp && nearRoadIsLocal(dec) ? "Threatened road near the village" : "Closest at-risk road in the forecast"}</h4>
+        ${sp && !nearRoadIsLocal(dec) ? `<p>No forecast at-risk road passes within ${NEAR_ROAD_KM} km of ${escapeHtml(dec.village_name)}. The recommendation rests on the village's own predicted closure probability (see View evidence).</p>` : ""}
+        ${sp ? `
+          <p>${escapeHtml(roadLabel(sp))} <span class="mono">${escapeHtml(sp.segment_id)}</span> has a
+          <strong>${Math.round(sp.closure_probability * 100)}%</strong> predicted closure probability${sp.predicted_closed ? " and is <strong>predicted closed</strong>" : ""}
+          (slope ${sp.slope_deg != null ? Number(sp.slope_deg).toFixed(1) + "°" : "—"}, landslide class ${sp.landslide_class ?? "—"}).
+          ${dec.nearest_segment_km != null ? `It passes ${dec.nearest_segment_km.toFixed(1)} km from the village.` : ""}</p>
+          <button type="button" class="btn btn-secondary btn-sm" data-focus-segment="${escapeHtml(sp.segment_id)}">${icon("map")} Show this road on the map</button>
+        ` : `<p>No at-risk road segment is mapped near this village in the current forecast.</p>`}
       </div>
 
-      <div style="background:rgba(16,185,129,0.07); border:1px solid rgba(16,185,129,0.3); padding:16px; border-radius:8px;">
-        <h4 style="color:var(--accent-green); font-size:14px; margin-bottom:6px;">🛣️ Alternate Egress Corridor</h4>
-        <p style="font-size:13px; color:var(--text-secondary); line-height:1.5;">${dec.alternate_route} — Travel time delay estimated at ${dec.travel_time_after}. High-clearance 4x4 or foot transport recommended if primary corridor severs.</p>
+      <div class="modal-panel tone-green">
+        <h4>If the road closes</h4>
+        <p>Travel time from the village goes from <strong>${dec.travel_time_now}</strong> to <strong>${dec.travel_time_after}</strong>. ${escapeHtml(dec.alternate_route)}.</p>
       </div>
     </div>
   `;
 
+  const btn = content.querySelector("[data-focus-segment]");
+  if (btn) {
+    btn.addEventListener("click", () => {
+      closeModals();
+      focusSegment(btn.dataset.focusSegment);
+    });
+  }
+
   document.getElementById("modal-view-route").classList.remove("hidden");
 }
+
+const FALLBACK_PIPELINE_STAGES = [
+  { stage: "Forecast Ingestion", description: "Multi-model ensemble rainfall observations", status: "COMPLETED", last_updated: "" },
+  { stage: "Risk Calculation", description: "Slope & landslide susceptibility modelling", status: "COMPLETED", last_updated: "" },
+  { stage: "VRI Prediction", description: "Habitation reachability trajectories", status: "COMPLETED", last_updated: "" },
+  { stage: "Countdown Calculation", description: "Cutoff countdown timers", status: "COMPLETED", last_updated: "" },
+  { stage: "Route Evaluation", description: "Egress delta & alternate corridor search", status: "COMPLETED", last_updated: "" },
+  { stage: "Dispatch Decision", description: "Pre-positioning recommendations", status: "COMPLETED", last_updated: "" },
+  { stage: "Audit Logging", description: "Governance reasoning logged to PostgreSQL", status: "COMPLETED", last_updated: "" }
+];
 
 function openAutomationModal() {
   const content = document.getElementById("auto-modal-content");
   if (!content) return;
 
+  const stages = Array.isArray(automationStatusData.pipeline_stages) && automationStatusData.pipeline_stages.length
+    ? automationStatusData.pipeline_stages
+    : FALLBACK_PIPELINE_STAGES;
+  const live = Array.isArray(automationStatusData.pipeline_stages);
+  const lastRun = automationStatusData.last_automated_run
+    ? new Date(automationStatusData.last_automated_run).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
+    : null;
+
   content.innerHTML = `
-    <div style="padding:20px; display:flex; flex-direction:column; gap:16px;">
-      <p style="font-size:13.5px; color:var(--text-secondary);">DHARA runs an automated 7-stage disaster reachability and supply prepositioning pipeline continuously synchronizing with meteorological and telemetry inputs.</p>
-      
-      <div style="display:flex; flex-direction:column; gap:10px;">
-        <div style="background:var(--bg-main); padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; color:var(--text-primary);">
-          <div><strong>1. Forecast Ingestion</strong><div style="font-size:12px; color:var(--text-muted);">Multi-model ensemble rainfall observations</div></div>
-          <span style="color:var(--accent-green); font-weight:700;">✓ LIVE (12m ago)</span>
-        </div>
-        <div style="background:var(--bg-main); padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; color:var(--text-primary);">
-          <div><strong>2. Risk Calculation</strong><div style="font-size:12px; color:var(--text-muted);">Slope deg &amp; NASA COOLR landslide calibration</div></div>
-          <span style="color:var(--accent-green); font-weight:700;">✓ LIVE (8m ago)</span>
-        </div>
-        <div style="background:var(--bg-main); padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; color:var(--text-primary);">
-          <div><strong>3. VRI Prediction</strong><div style="font-size:12px; color:var(--text-muted);">3,660 habitations across North-East India evaluated</div></div>
-          <span style="color:var(--accent-green); font-weight:700;">✓ LIVE (5m ago)</span>
-        </div>
-        <div style="background:var(--bg-main); padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; color:var(--text-primary);">
-          <div><strong>4. Cutoff Countdown</strong><div style="font-size:12px; color:var(--text-muted);">Countdown timers active across vulnerable corridors</div></div>
-          <span style="color:var(--accent-green); font-weight:700;">✓ LIVE (5m ago)</span>
-        </div>
-        <div style="background:var(--bg-main); padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; color:var(--text-primary);">
-          <div><strong>5. Route Evaluation</strong><div style="font-size:12px; color:var(--text-muted);">PostGIS Dijkstra &amp; A* alternate graph routing</div></div>
-          <span style="color:var(--accent-green); font-weight:700;">✓ LIVE (4m ago)</span>
-        </div>
-        <div style="background:var(--bg-main); padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; color:var(--text-primary);">
-          <div><strong>6. Dispatch Recommendations</strong><div style="font-size:12px; color:var(--text-muted);">25 automated pre-positioning dispatches calculated</div></div>
-          <span style="color:var(--accent-green); font-weight:700;">✓ LIVE (2m ago)</span>
-        </div>
-        <div style="background:var(--bg-main); padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; color:var(--text-primary);">
-          <div><strong>7. Audit Logging</strong><div style="font-size:12px; color:var(--text-muted);">Governance reasoning logged to PostgreSQL</div></div>
-          <span style="color:var(--accent-green); font-weight:700;">✓ ACTIVE</span>
-        </div>
-      </div>
+    <div class="modal-stack">
+      <p class="modal-intro">
+        ${escapeHtml(automationStatusData.summary_text || "DHARA runs its reachability and pre-positioning pipeline automatically.")}
+        ${lastRun ? ` Last run: <strong>${lastRun}</strong>.` : ""}
+        ${live ? "" : ` <span class="text-amber">Live pipeline status unavailable, showing the stage list only.</span>`}
+      </p>
+      <ol class="pipeline-list">
+        ${stages.map((s, i) => {
+          const done = /COMPLETED|ACTIVE|OK/i.test(s.status || "");
+          return `
+            <li class="pipeline-stage ${done ? "done" : "pending"}">
+              <span class="pipeline-num">${i + 1}</span>
+              <div class="pipeline-text">
+                <strong>${escapeHtml(s.stage)}</strong>
+                <span>${escapeHtml(s.description || "")}</span>
+              </div>
+              <span class="pipeline-status">${done ? icon("check", 12) : ""} ${escapeHtml(capitalize(String(s.status || "").toLowerCase()))}${s.last_updated ? ` &middot; ${escapeHtml(s.last_updated)}` : ""}</span>
+            </li>`;
+        }).join("")}
+      </ol>
     </div>
   `;
 
@@ -1411,17 +3201,20 @@ function initFieldAppInteractions() {
             const lat = pos.coords.latitude.toFixed(4);
             const lon = pos.coords.longitude.toFixed(4);
             coordsInput.value = `${lat}, ${lon}`;
+            syncFieldPin();
             if (hint) hint.innerHTML = `✓ Live GPS Locked: Lat ${lat}, Lon ${lon} (Acc: &plusmn;${Math.round(pos.coords.accuracy || 5)}m)`;
           },
           (err) => {
             // Fallback coordinates for hill sector demo
             coordsInput.value = "27.2415, 92.4180";
+            syncFieldPin();
             if (hint) hint.innerHTML = `✓ GPS Locked (Kameng Sector): Lat 27.2415, Lon 92.4180`;
           },
           { timeout: 5000 }
         );
       } else {
         coordsInput.value = "27.2415, 92.4180";
+            syncFieldPin();
         if (hint) hint.innerHTML = `✓ GPS Locked (Kameng Sector): Lat 27.2415, Lon 92.4180`;
       }
     };
@@ -1473,7 +3266,8 @@ function initFieldAppInteractions() {
       const location = document.getElementById("f-rep-location").value;
       const type = document.getElementById("f-rep-type").value;
       const severity = document.getElementById("f-rep-severity").value;
-      const desc = document.getElementById("f-rep-desc").value;
+      let desc = document.getElementById("f-rep-desc").value;
+      if (fieldAiReading) desc += ` [AI reading: ${fieldAiReading.hazard_type}, ${fieldAiReading.severity}]`;
       const coordsStr = document.getElementById("f-rep-coords").value || "27.2415, 92.4180";
       const coords = coordsStr.split(",").map(x => parseFloat(x.trim())).reverse(); // [lon, lat]
 
@@ -1541,6 +3335,8 @@ function initFieldAppInteractions() {
 
 function resetFieldForm() {
   document.getElementById("f-rep-desc").value = "";
+  fieldAiReading = null;
+  document.getElementById("f-ai-hint")?.classList.add("hidden");
   const removeBtn = document.getElementById("btn-remove-photo");
   if (removeBtn) removeBtn.click();
 }
@@ -1566,8 +3362,8 @@ function renderPendingReportsList() {
   if (pendingFieldReports.length === 0) {
     container.innerHTML = `
       <div class="empty-state-box">
-        <span class="empty-icon">✓</span>
-        <h4>No Pending Offline Reports</h4>
+        <span class="empty-icon">${icon("check", 20)}</span>
+        <h4>No pending offline reports</h4>
         <p>All field incident reports have been synchronized with the DHARA Command Center.</p>
       </div>
     `;
@@ -1578,10 +3374,10 @@ function renderPendingReportsList() {
     <div class="report-item-card">
       <div class="report-card-top">
         <span class="report-id">${r.uuid}</span>
-        <span class="pill-prov simulated" style="background:#78350F; color:#FBBF24;">⏳ QUEUED OFFLINE</span>
+        <span class="status-tag amber">Queued offline</span>
       </div>
       <div class="report-title">${r.incident_type} (${r.severity})</div>
-      <div class="report-location">📍 ${r.location_name}</div>
+      <div class="report-location">${icon("pin", 13)} ${escapeHtml(r.location_name)}</div>
       <div class="report-desc">${r.description}</div>
       <div class="report-footer">
         <span>Reporter: ${r.reporter_name}</span>
@@ -1604,7 +3400,7 @@ function renderSubmittedReportsList() {
     <div class="report-item-card">
       <div class="report-card-top">
         <span class="report-id">${r.action || r.id || 'FIELD_REPORT'}</span>
-        <span class="pill-prov real">✓ SYNCED</span>
+        <span class="pill-prov real">${icon("check", 11)} SYNCED</span>
       </div>
       <div class="report-desc">${r.reasoning || r.description}</div>
       <div class="report-footer">
@@ -1642,150 +3438,198 @@ function renderOfficerFieldReportsView() {
 // ====================================================
 // 8. OTHER OFFICER VIEWS (FLEET, ROUTES, SHIPMENTS, TRACK RECORD)
 // ====================================================
+const DEMO_SHIPMENTS = [
+  {
+    shipment_id: "SHP-2026-08491", license_number: "AS-01-EC-4829", truck_type: "12-Wheeler Heavy Relief Truck",
+    driver_name: "Rajesh Kumar", driver_contact: "+91 98765 43210", status: "IN TRANSIT",
+    origin_depot: "Depot A (Tawang Relief Hub)", destination_village: "Ukhrul Sector",
+    cargo_summary: "12.5 Tonnes Rice & Food Grains", estimated_arrival: "Today, 11:45 IST",
+    route_assigned: "NH-150 Kameng Corridor", progress_pct: 65,
+    cargo_details: [{ item: "Rice & Food Grains", qty: "12.5 Tonnes" }]
+  }
+];
+
+function shipmentTone(status) {
+  const s = String(status || "").toUpperCase();
+  if (/DELIVERED|PRE-POSITIONED|ARRIVED/.test(s)) return "green";
+  if (/DISPATCHED|LOADING/.test(s)) return "amber";
+  if (/DELAYED|FAILED|BLOCKED/.test(s)) return "red";
+  return "blue";
+}
+
+function currentShipments() {
+  return shipmentsData.length > 0 ? shipmentsData : DEMO_SHIPMENTS;
+}
+
 function renderShipmentsView() {
   const container = document.getElementById("shipments-cards-container");
   if (!container) return;
 
-  const mockShipments = shipmentsData.length > 0 ? shipmentsData : [
-    {
-      shipment_id: "SHP-2026-08491",
-      license_number: "AS-01-EC-4829",
-      truck_type: "12-Wheeler Heavy Relief Truck",
-      driver_name: "Rajesh Kumar",
-      driver_contact: "+91 98765 43210",
-      status: "IN TRANSIT",
-      origin_depot: "Depot A (Tawang Relief Hub)",
-      destination_village: "Ukhrul Sector",
-      cargo_summary: "12.5 Tonnes Rice & Food Grains",
-      estimated_arrival: "Today, 11:45 IST (In 4h 20m)",
-      route_assigned: "NH-150 Kameng Corridor",
-      progress_pct: 65
-    },
-    {
-      shipment_id: "SHP-2026-08492",
-      license_number: "AR-02-B-9102",
-      truck_type: "Refrigerated Medical Transport Unit",
-      driver_name: "Biren Sharma",
-      driver_contact: "+91 98123 45678",
-      status: "EN ROUTE",
-      origin_depot: "Depot B (Kameng Regional Depot)",
-      destination_village: "Mago Valley",
-      cargo_summary: "8.0 Tonnes Medical Kits & Vaccines",
-      estimated_arrival: "Today, 14:00 IST (In 6h 35m)",
-      route_assigned: "Mago Gorge Pass",
-      progress_pct: 40
-    }
-  ];
-
-  container.innerHTML = mockShipments.map(s => `
-    <div class="manifest-card" style="cursor:pointer;" onclick="openShipmentModal('${s.license_number}')">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <strong style="font-family:var(--font-mono); color:var(--accent-blue); font-size:15px;">${s.license_number}</strong>
-        <span class="pill-prov simulated" style="background:#1E3A8A; color:#93C5FD;">${s.status}</span>
+  container.innerHTML = currentShipments().map(s => `
+    <button type="button" class="manifest-card card-button" data-shipment="${escapeHtml(s.license_number)}">
+      <div class="card-head">
+        <div>
+          <strong class="card-id mono">${escapeHtml(s.license_number)}</strong>
+          <span class="card-id-sub">${escapeHtml(s.truck_type || s.shipment_id || "")}</span>
+        </div>
+        <span class="status-tag ${shipmentTone(s.status)}">${escapeHtml(s.status)}</span>
       </div>
-      <div style="font-size:14px; font-weight:700; color:var(--text-primary);">${s.cargo_summary}</div>
-      <div style="font-size:12.5px; color:var(--text-muted);">
-        <div>Route: <strong style="color:var(--text-secondary);">${s.route_assigned}</strong></div>
-        <div>Dest: <strong style="color:var(--text-secondary);">${s.destination_village}</strong> &bull; ETA: <strong style="color:var(--text-secondary);">${s.estimated_arrival}</strong></div>
+      <div class="card-headline">${escapeHtml(s.cargo_summary)}</div>
+      <div class="card-detail-grid">
+        <div>From: <strong>${escapeHtml(s.origin_depot)}</strong></div>
+        <div>To: <strong>${escapeHtml(s.destination_village)}</strong></div>
+        <div>Route: <strong>${escapeHtml(s.route_assigned || "—")}</strong></div>
+        <div>ETA: <strong>${escapeHtml(s.estimated_arrival || "—")}</strong></div>
       </div>
-      <div style="background:var(--border-color); height:6px; border-radius:3px; overflow:hidden;">
-        <div style="background:var(--accent-blue); width:${s.progress_pct || 50}%; height:100%;"></div>
+      <div class="progress-track" aria-label="${s.progress_pct || 0}% of the way"><div class="progress-fill" style="width:${Math.max(0, Math.min(100, Number(s.progress_pct) || 0))}%"></div></div>
+      <div class="card-foot">
+        <span>Driver: ${escapeHtml(s.driver_name || "—")}</span>
+        <span class="text-blue">Open manifest &rarr;</span>
       </div>
-      <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--text-muted);">
-        <span>Driver: ${s.driver_name}</span>
-        <span style="color:var(--accent-blue);">Click for Manifest →</span>
-      </div>
-    </div>
+    </button>
   `).join("");
+
+  container.querySelectorAll("[data-shipment]").forEach(btn => {
+    btn.addEventListener("click", () => openShipmentModal(btn.dataset.shipment));
+  });
 }
 
 window.openShipmentModal = function(license) {
   const content = document.getElementById("shipment-modal-content");
   const licEl = document.getElementById("modal-lic-plate");
   if (!content) return;
+  const s = currentShipments().find(x => x.license_number === license);
+  if (!s) return;
   if (licEl) licEl.textContent = license;
 
+  const items = Array.isArray(s.cargo_details) && s.cargo_details.length
+    ? s.cargo_details
+    : [{ item: s.cargo_summary, qty: "—" }];
+  const coords = Array.isArray(s.current_coordinates) ? s.current_coordinates : null;
+
   content.innerHTML = `
-    <div style="padding:20px; display:flex; flex-direction:column; gap:16px;">
-      <div style="background:var(--bg-main); padding:16px; border-radius:8px; border:1px solid var(--border-color); color:var(--text-secondary);">
-        <h4 style="color:var(--accent-blue); margin-bottom:8px;">Vehicle: ${license} (12-Wheeler Heavy Relief Truck)</h4>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:13px;">
-          <div>Driver: <strong style="color:var(--text-primary);">Rajesh Kumar (+91 98765 43210)</strong></div>
-          <div>Origin Depot: <strong style="color:var(--text-primary);">Depot A (Tawang Hub)</strong></div>
-          <div>Destination: <strong style="color:var(--text-primary);">Ukhrul Sector Habitations</strong></div>
-          <div>Telemetry GPS: <strong style="color:var(--text-primary);">27.2415° N, 92.4180° E (Speed: 38 km/h)</strong></div>
+    <div class="modal-stack">
+      <div class="modal-panel">
+        <h4>${escapeHtml(s.truck_type || "Relief truck")} &middot; <span class="status-tag ${shipmentTone(s.status)}">${escapeHtml(s.status)}</span></h4>
+        <div class="modal-grid">
+          <div><span class="modal-label">Driver</span><div class="modal-value">${escapeHtml(s.driver_name || "—")}${s.driver_contact ? ` &middot; ${escapeHtml(s.driver_contact)}` : ""}</div></div>
+          <div><span class="modal-label">Route</span><div class="modal-value">${escapeHtml(s.route_assigned || "—")}</div></div>
+          <div><span class="modal-label">From</span><div class="modal-value">${escapeHtml(s.origin_depot || "—")}</div></div>
+          <div><span class="modal-label">To</span><div class="modal-value">${escapeHtml(s.destination_village || "—")}</div></div>
+          <div><span class="modal-label">Dispatched</span><div class="modal-value">${escapeHtml(s.dispatch_started_at || "—")}</div></div>
+          <div><span class="modal-label">ETA</span><div class="modal-value">${escapeHtml(s.estimated_arrival || "—")}</div></div>
         </div>
+        <div class="progress-track"><div class="progress-fill" style="width:${Math.max(0, Math.min(100, Number(s.progress_pct) || 0))}%"></div></div>
+        ${coords ? `<button type="button" class="btn btn-secondary btn-sm" data-truck-map>${icon("map")} Show truck on the map</button>` : ""}
       </div>
 
-      <div style="background:var(--bg-main); padding:16px; border-radius:8px; border:1px solid var(--border-color);">
-        <h4 style="color:var(--text-primary); margin-bottom:8px;">📦 Cargo Manifest Breakdown</h4>
+      <div class="modal-panel">
+        <span class="modal-label">Cargo manifest</span>
         <table class="dash-table">
-          <thead><tr><th>Item</th><th>Quantity</th><th>Weight</th></tr></thead>
-          <tbody>
-            <tr><td>Emergency Rice &amp; Grain Bags</td><td>250 Bags</td><td>12.5 Tonnes</td></tr>
-            <tr><td>Trauma Medical &amp; First Aid Kits</td><td>450 Units</td><td>0.5 Tonnes</td></tr>
-            <tr><td>Chlorine Water Purification Packs</td><td>5,000 Packs</td><td>0.2 Tonnes</td></tr>
-          </tbody>
+          <thead><tr><th>Item</th><th>Quantity</th></tr></thead>
+          <tbody>${items.map(i => `<tr><td>${escapeHtml(i.item)}</td><td>${escapeHtml(i.qty)}</td></tr>`).join("")}</tbody>
         </table>
       </div>
     </div>
   `;
 
+  const mapBtn = content.querySelector("[data-truck-map]");
+  if (mapBtn && coords) {
+    mapBtn.addEventListener("click", () => {
+      closeModals();
+      focusMapOn([coords[1], coords[0]], 11, `<strong>${escapeHtml(license)}</strong><br>${escapeHtml(s.status)}`);
+    });
+  }
+
   document.getElementById("modal-shipment-detail").classList.remove("hidden");
 };
+
+// ---------- Fleet ----------
+const DEMO_VEHICLES = [
+  { vehicle_id: "DH-021", depot_id: "Imphal", status: "IN_TRANSIT", speed_kmh: 42, coordinates: [93.892, 27.124] },
+  { vehicle_id: "DH-022", depot_id: "Tawang", status: "IN_TRANSIT", speed_kmh: 35, coordinates: [94.015, 27.185] },
+  { vehicle_id: "DH-023", depot_id: "Western Forward", status: "IDLE", speed_kmh: 0, coordinates: [93.92, 27.08] },
+  { vehicle_id: "DH-024", depot_id: "Central Depot", status: "IDLE", speed_kmh: 0, coordinates: [94.15, 27.15] }
+];
+
+const FLEET_BUCKETS = {
+  IDLE: "available", AVAILABLE: "available", STANDBY: "available",
+  IN_TRANSIT: "in_transit", DISPATCHED: "in_transit", EN_ROUTE: "in_transit",
+  DELAYED: "delayed", OFFLINE: "offline"
+};
+const FLEET_BUCKET_UI = {
+  available: { tone: "green", label: "Available" },
+  in_transit: { tone: "blue", label: "En route" },
+  delayed: { tone: "amber", label: "Delayed" },
+  offline: { tone: "red", label: "Offline" }
+};
+
+function vehicleBucket(v) {
+  return FLEET_BUCKETS[String(v.status || "").toUpperCase().replace(/[\s-]+/g, "_")] || "in_transit";
+}
+
+function depotName(id) {
+  const d = depotsData.find(x => x.id === id);
+  return d ? d.name : (id || "—");
+}
 
 function renderFleetView() {
   const container = document.getElementById("fleet-cards-container");
   if (!container) return;
 
-  const fleet = [
-    { id: "DH-021", lic: "AS-01-EC-4829", driver: "Rajesh Kumar", status: "in_transit", statusLabel: "EN ROUTE", cargo: "12t rice", depot: "Imphal", dest: "Ukhrul", eta: "4h 20m", speed: "42 km/h", gps: "27.124°N, 93.892°E" },
-    { id: "DH-022", lic: "AR-02-B-9102", driver: "Biren Sharma", status: "in_transit", statusLabel: "EN ROUTE", cargo: "8t medical", depot: "Tawang", dest: "Mago Valley", eta: "6h 35m", speed: "35 km/h", gps: "27.185°N, 94.015°E" },
-    { id: "DH-023", lic: "MN-01-A-3049", driver: "Tashi Namgyal", status: "available", statusLabel: "AVAILABLE", cargo: "Ready for Dispatch", depot: "Western Forward", dest: "Standby", eta: "Immediate", speed: "0 km/h", gps: "27.080°N, 93.920°E" },
-    { id: "DH-024", lic: "TR-03-C-7712", driver: "Khemraj Gogoi", status: "available", statusLabel: "AVAILABLE", cargo: "Empty (Refueling)", depot: "Central Depot", dest: "Standby", eta: "Immediate", speed: "0 km/h", gps: "27.150°N, 94.150°E" }
-  ];
+  const live = vehiclesData.length > 0;
+  const fleet = live ? vehiclesData : DEMO_VEHICLES;
 
-  let filtered = fleet;
-  if (currentFleetFilter !== "all") {
-    filtered = fleet.filter(f => f.status === currentFleetFilter);
-  }
+  const counts = { available: 0, in_transit: 0, delayed: 0, offline: 0 };
+  fleet.forEach(v => { counts[vehicleBucket(v)]++; });
+  setText("fleet-tot", String(fleet.length));
+  setText("fleet-avail", String(counts.available));
+  setText("fleet-transit", String(counts.in_transit));
+  setText("fleet-delayed", String(counts.delayed));
+  setText("fleet-offline", String(counts.offline));
 
-  container.innerHTML = filtered.map(v => `
-    <div class="vehicle-card">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <strong style="font-size:16px; color:#93C5FD;">TRUCK ${v.id}</strong>
-          <span style="font-size:12px; color:#9CA3AF; margin-left:6px;">(${v.lic})</span>
+  const filtered = currentFleetFilter === "all" ? fleet : fleet.filter(v => vehicleBucket(v) === currentFleetFilter);
+
+  container.innerHTML = filtered.length ? filtered.map(v => {
+    const bucket = FLEET_BUCKET_UI[vehicleBucket(v)];
+    const c = Array.isArray(v.coordinates) ? v.coordinates : null;
+    return `
+      <div class="vehicle-card">
+        <div class="card-head">
+          <div>
+            <strong class="card-id mono">${escapeHtml(String(v.vehicle_id).toUpperCase())}</strong>
+            <span class="card-id-sub">${escapeHtml(depotName(v.depot_id))}</span>
+          </div>
+          <span class="status-tag ${bucket.tone}">${bucket.label}</span>
         </div>
-        <span class="pill-prov simulated" style="background:${v.status === 'available' ? '#065F46' : '#1E3A8A'}; color:${v.status === 'available' ? '#34D399' : '#93C5FD'};">
-          ${v.statusLabel}
-        </span>
+        <div class="card-detail-grid">
+          <div>Status: <strong>${escapeHtml(capitalize(String(v.status || "").toLowerCase().replace(/_/g, " ")))}</strong></div>
+          <div>Speed: <strong>${v.speed_kmh != null ? v.speed_kmh + " km/h" : "—"}</strong></div>
+          <div>Position: <strong>${c ? `${c[1].toFixed(3)}°N, ${c[0].toFixed(3)}°E` : "—"}</strong></div>
+          <div>Last ping: <strong>${v.updated_at ? relTime(v.updated_at) : "—"}</strong></div>
+        </div>
+        <div class="card-telemetry-row">
+          <span>${live ? "Telemetry from /vehicles/live" : "Demo vehicle (API offline)"}</span>
+          <span class="text-amber">SIMULATED GPS</span>
+        </div>
+        <div class="card-actions">
+          ${c ? `<button class="btn-sec-link" data-vehicle-map="${escapeHtml(v.vehicle_id)}">${icon("map")} Show on map</button>` : ""}
+        </div>
       </div>
+    `;
+  }).join("") : `<div class="empty-panel">No vehicles in this state.</div>`;
 
-      <div style="font-size:14px; font-weight:700;">${v.cargo}</div>
-
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:12.5px; color:#D1D5DB;">
-        <div>Depot: <strong>${v.depot}</strong></div>
-        <div>Dest: <strong>${v.dest}</strong></div>
-        <div>Driver: <strong>${v.driver}</strong></div>
-        <div>ETA: <strong>${v.eta}</strong></div>
-      </div>
-
-      <div style="background:rgba(255,255,255,0.03); padding:8px 10px; border-radius:4px; font-size:11.5px; color:#9CA3AF; display:flex; justify-content:space-between;">
-        <span>GPS: ${v.gps} (${v.speed})</span>
-        <span style="color:#FBBF24;">SIMULATED GPS</span>
-      </div>
-
-      <div style="display:flex; gap:8px; margin-top:4px;">
-        <button class="btn-sec-link" style="flex:1;" onclick="openShipmentModal('${v.lic}')">View Details</button>
-        <button class="btn-sec-link" style="flex:1;" onclick="openRouteModal(liveDecisions[0])">View Route</button>
-      </div>
-    </div>
-  `).join("");
+  container.querySelectorAll("[data-vehicle-map]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const v = fleet.find(x => x.vehicle_id === btn.dataset.vehicleMap);
+      if (!v || !v.coordinates) return;
+      focusMapOn([v.coordinates[1], v.coordinates[0]], 11, `<strong>${escapeHtml(v.vehicle_id)}</strong><br>${escapeHtml(depotName(v.depot_id))}<br>${v.speed_kmh ?? 0} km/h`);
+    });
+  });
 
   // Bind Fleet Filters
   document.querySelectorAll(".fleet-kpi-btn").forEach(btn => {
-    btn.onclick = (e) => {
+    btn.onclick = () => {
       document.querySelectorAll(".fleet-kpi-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       currentFleetFilter = btn.dataset.fleetFilter;
@@ -1794,103 +3638,215 @@ function renderFleetView() {
   });
 }
 
+// ---------- Routes: the at-risk road segments from the closure model ----------
+function topRiskSegments(limit) {
+  return (atRiskSegmentsData || [])
+    .filter(s => s && s.properties && typeof s.properties.closure_probability === "number")
+    .sort((a, b) => b.properties.closure_probability - a.properties.closure_probability)
+    .slice(0, limit);
+}
+
+function formatForecastDate(iso) {
+  if (!iso) return "";
+  const d = new Date(String(iso).length <= 10 ? `${iso}T00:00:00` : iso);
+  return Number.isFinite(d.getTime()) ? d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" }) : String(iso);
+}
+
 function renderRoutesView() {
   const container = document.getElementById("routes-cards-container");
   if (!container) return;
 
-  const corridors = [
-    { name: "NH-150 Kameng Corridor", dist: "78 km", risk: "0.78 (HIGH)", slope: "28.4°", status: "Threatened (Landslide)", delay: "+140 min", habitations: "6 Habitations (Ukhrul, Lumla)" },
-    { name: "Mago Valley Pass Corridor", dist: "42 km", risk: "0.88 (CRITICAL)", slope: "34.1°", status: "Severe Scouring Risk", delay: "Severed", habitations: "3 Habitations (Mago, Thingbu)" },
-    { name: "Tawang Link Bypass Highway", dist: "56 km", risk: "0.32 (MODERATE)", slope: "19.5°", status: "Operational with Escort", delay: "+25 min", habitations: "4 Habitations (Mukto, Bongleng)" },
-    { name: "Bomdila Foothill Trunk Road", dist: "112 km", risk: "0.15 (LOW)", slope: "12.0°", status: "Clear (Double Lane)", delay: "0 min", habitations: "12 Habitations (Regional Main)" }
-  ];
+  const segs = topRiskSegments(12);
+  if (!segs.length) {
+    container.innerHTML = `<div class="empty-panel">No at-risk road segments loaded. Road risk comes from the closure model via <span class="mono">/segments/at-risk</span>.</div>`;
+    return;
+  }
 
-  container.innerHTML = corridors.map(c => `
-    <div class="route-card">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <strong style="color:#93C5FD; font-size:15px;">${c.name}</strong>
-        <span class="pill-prov real">OSM REAL</span>
+  container.innerHTML = segs.map((s, i) => {
+    const p = s.properties;
+    const pct = Math.round(p.closure_probability * 100);
+    const reasons = Array.isArray(p.hazard_reasons) ? p.hazard_reasons : [];
+    return `
+      <div class="route-card">
+        <div class="card-head">
+          <div class="card-head-rank">
+            <span class="rank-badge">${i + 1}</span>
+            <div>
+              <strong class="card-id">${escapeHtml(roadLabel(p))}</strong>
+              <span class="card-id-sub">${escapeHtml(p.segment_id)}</span>
+            </div>
+          </div>
+          <span class="status-tag ${p.predicted_closed || pct >= 50 ? "red" : "amber"}">${p.predicted_closed ? "Predicted closed" : pct >= 50 ? "Critical" : "At risk"}</span>
+        </div>
+        <div class="risk-meter" aria-label="${pct}% closure probability">
+          <div class="risk-meter-fill ${pct >= 50 ? "red" : "amber"}" style="width:${pct}%"></div>
+        </div>
+        <div class="card-detail-grid">
+          <div>Closure risk: <strong>${pct}%</strong></div>
+          <div>Forecast: <strong>${escapeHtml(formatForecastDate(p.forecast_for_date) || "—")}</strong></div>
+          <div>Slope: <strong>${p.slope_deg != null ? Number(p.slope_deg).toFixed(1) + "°" : "—"}</strong></div>
+          <div>Landslide/flood: <strong>${p.landslide_class ?? "—"}/${p.flood_class ?? "—"}</strong></div>
+        </div>
+        ${reasons.length ? `<div class="card-line muted">${escapeHtml(reasons.join(" · "))}</div>` : ""}
+        <div class="card-actions">
+          <button class="btn-sec-link" data-segment-map="${escapeHtml(p.segment_id)}">${icon("map")} Show on map</button>
+        </div>
       </div>
-      <div style="font-size:13px; color:#F3F4F6;">Length: <strong>${c.dist}</strong> &bull; Slope: <strong>${c.slope}</strong></div>
-      <div style="font-size:13px; color:#F87171;">Closure Risk: <strong>${c.risk}</strong> &bull; Delay: <strong>${c.delay}</strong></div>
-      <div style="font-size:12px; color:var(--text-muted);">Serves: ${c.habitations}</div>
-      <button class="btn-sec-link" style="margin-top:6px;" onclick="openRouteModal(liveDecisions[0])">Inspect Alternate Egress Corridor →</button>
-    </div>
-  `).join("");
+    `;
+  }).join("");
+
+  container.querySelectorAll("[data-segment-map]").forEach(btn => {
+    btn.addEventListener("click", () => focusSegment(btn.dataset.segmentMap));
+  });
+}
+
+// ---------- Depots ----------
+const DEMO_DEPOTS = [
+  { id: "DEPOT_A", name: "District Central Depot (West Hills)", stock: { rice_tonnes: 120, medicines_units: 2400, water_liters: 15000 }, vehicles_available: 8, vehicles_in_transit: 3, data_provenance: "SIMULATED" },
+  { id: "DEPOT_B", name: "Western Forward Depot", stock: { rice_tonnes: 85, medicines_units: 1800, water_liters: 10000 }, vehicles_available: 5, vehicles_in_transit: 2, data_provenance: "SIMULATED" }
+];
+
+function currentDepots() {
+  return depotsData.length > 0 ? depotsData : DEMO_DEPOTS;
 }
 
 function renderDepotsView() {
   const container = document.getElementById("depots-cards-container");
   if (!container) return;
 
-  const depots = [
-    { name: "District Central Depot (West Hills)", id: "DEPOT_A", rice: "120 Tonnes", meds: "2,400 Kits", water: "15,000 L", vehicles: "8 Trucks (3 in transit)" },
-    { name: "Western Forward Depot", id: "DEPOT_B", rice: "85 Tonnes", meds: "1,800 Kits", water: "10,000 L", vehicles: "5 Trucks (2 in transit)" },
-    { name: "Lohit Transit Hub", id: "DEPOT_C", rice: "150 Tonnes", meds: "3,200 Kits", water: "25,000 L", vehicles: "12 Trucks (4 in transit)" }
-  ];
+  container.innerHTML = currentDepots().map(d => {
+    const st = d.stock || {};
+    const prov = String(d.data_provenance || "SIMULATED").toUpperCase();
+    const coords = d.location && d.location.coordinates;
+    return `
+      <div class="depot-card">
+        <div class="card-head">
+          <strong class="card-id">${escapeHtml(d.name)}</strong>
+          <span class="pill-prov ${prov === "REAL" ? "real" : "simulated"}">${prov === "REAL" ? "REAL" : "SIMULATED"} STOCK</span>
+        </div>
+        <div class="stock-grid">
+          <div><span class="stock-num">${st.rice_tonnes != null ? Number(st.rice_tonnes).toLocaleString() : "—"}</span><span class="stock-lbl">t rice</span></div>
+          <div><span class="stock-num">${st.medicines_units != null ? Number(st.medicines_units).toLocaleString() : "—"}</span><span class="stock-lbl">medicine units</span></div>
+          <div><span class="stock-num">${st.water_liters != null ? Number(st.water_liters).toLocaleString() : "—"}</span><span class="stock-lbl">L water</span></div>
+        </div>
+        <div class="card-line">Vehicles: <strong>${d.vehicles_available ?? "—"} available</strong> &middot; <strong>${d.vehicles_in_transit ?? 0} in transit</strong></div>
+        <div class="card-actions">
+          ${coords ? `<button class="btn-sec-link" data-depot-map="${escapeHtml(d.id)}">${icon("map")} Show on map</button>` : ""}
+        </div>
+      </div>
+    `;
+  }).join("");
 
-  container.innerHTML = depots.map(d => `
-    <div class="depot-card">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <strong style="color:#93C5FD; font-size:15px;">${d.name}</strong>
-        <span class="pill-prov real">ACTIVE HUB</span>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:13px;">
-        <div>Rice Stocks: <strong>${d.rice}</strong></div>
-        <div>Med Kits: <strong>${d.meds}</strong></div>
-        <div>Potable Water: <strong>${d.water}</strong></div>
-        <div>Assigned Fleet: <strong>${d.vehicles}</strong></div>
-      </div>
-    </div>
-  `).join("");
+  container.querySelectorAll("[data-depot-map]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const d = currentDepots().find(x => x.id === btn.dataset.depotMap);
+      if (!d || !d.location) return;
+      const c = d.location.coordinates;
+      focusMapOn([c[1], c[0]], 10, `<strong>${escapeHtml(d.name)}</strong><br>Rice: ${d.stock ? d.stock.rice_tonnes : "—"}t<br>Vehicles available: ${d.vehicles_available}`);
+    });
+  });
+}
+
+// ---------- Alerts ----------
+const DEMO_ALERTS = [
+  { id: "ALT_01", severity: "CRITICAL", alert_type: "BLOCKED ROAD", location: "Ukhrul Sector · NH-150 Kameng Corridor", reason: "Rainfall surge 114mm over 72h will breach slope threshold km 42.", recommended_action: "Pre-position 12t rice", confidence: 0.82 },
+  { id: "ALT_02", severity: "WARNING", alert_type: "SLOPE RISK", location: "Thingbu Camp · NH-150 Km 48", reason: "Single-lane traffic constriction from minor shoulder erosion.", recommended_action: "Dispatch 15t grains", confidence: 0.7 }
+];
+
+// "Corridor osm_w_725155507 (dist_tawang)" -> { segment, district }
+function parseAlertLocation(loc) {
+  const m = /Corridor\s+(\S+)\s+\((\S+)\)/i.exec(loc || "");
+  return m ? { segment: m[1], district: districtLabel(m[2]) } : { segment: null, district: "" };
 }
 
 function renderAlertsView() {
   const container = document.getElementById("alerts-list-container");
   if (!container) return;
 
-  const alerts = [
-    { id: "ALT_01", severity: "CRITICAL", village: "Ukhrul Sector", road: "NH-150 Kameng Corridor", time: "38 hours remaining", reason: "Rainfall surge 114mm over 72h will breach slope threshold km 42.", action: "Pre-position 12t rice" },
-    { id: "ALT_02", severity: "CRITICAL", village: "Mago Valley", road: "Mago Gorge Pass", time: "19 hours remaining", reason: "Debris torrent upstream risking bridge structural foundation.", action: "Pre-position 8t medical kits" },
-    { id: "ALT_03", severity: "WARNING", village: "Thingbu Camp", road: "NH-150 Km 48", time: "44 hours remaining", reason: "Single-lane traffic constriction from minor shoulder erosion.", action: "Dispatch 15t grains" }
-  ];
+  const live = alertsData.length > 0;
+  const alerts = live ? alertsData : DEMO_ALERTS;
 
-  container.innerHTML = alerts.map(a => `
-    <div class="risk-item-card ${a.severity.toLowerCase()}" style="padding:16px;">
-      <div class="risk-item-top">
-        <span class="risk-tag ${a.severity.toLowerCase()}">${a.severity}</span>
-        <span class="risk-prob">⏱️ ${a.time}</span>
+  container.innerHTML = alerts.map(a => {
+    const sev = String(a.severity || "WARNING").toLowerCase() === "critical" ? "critical" : "warning";
+    const loc = parseAlertLocation(a.location);
+    const seg = loc.segment ? segById.get(loc.segment) : null;
+    const title = seg ? roadLabel(seg.properties) : (loc.segment ? `Road ${loc.segment}${loc.district ? " · " + loc.district : ""}` : a.location);
+    return `
+      <div class="risk-item-card roomy ${sev}">
+        <div class="risk-item-top">
+          <span class="risk-tag ${sev}">${escapeHtml(a.severity)} &middot; ${escapeHtml(a.alert_type || "ALERT")}</span>
+          <span class="risk-prob">${a.time ? `${icon("clock", 12)} ${relTime(a.time)}` : ""}${a.confidence != null ? ` &middot; ${Math.round(a.confidence * 100)}% confidence` : ""}</span>
+        </div>
+        <div class="risk-location">${escapeHtml(title)}</div>
+        ${loc.segment ? `<div class="risk-seg-id">${escapeHtml(loc.segment)}</div>` : ""}
+        <div class="risk-reason">${escapeHtml(a.reason)}</div>
+        <div class="risk-item-footer">
+          <span class="risk-action">Recommended: <strong>${escapeHtml(a.recommended_action || "—")}</strong></span>
+          <div class="risk-footer-actions">
+            ${loc.segment ? `<button class="btn-sec-link" data-segment-map="${escapeHtml(loc.segment)}">${icon("map")} Show on map</button>` : ""}
+            <button class="btn-dec change btn-dec-sm" data-go="#/decisions">Review decisions &rarr;</button>
+          </div>
+        </div>
       </div>
-      <div class="risk-location" style="font-size:15px;">${a.village} &bull; ${a.road}</div>
-      <div class="risk-reason">${a.reason}</div>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border-color); padding-top:8px;">
-        <span style="font-size:12px; color:#93C5FD;">Recommended: <strong>${a.action}</strong></span>
-        <button class="btn-dec change" style="padding:6px 14px; font-size:12px;" onclick="window.location.hash='#/decisions'">Review Decision →</button>
-      </div>
-    </div>
-  `).join("");
+    `;
+  }).join("") + (live ? "" : `<div class="empty-panel">Demo alerts shown because the alerts API is unavailable.</div>`);
+
+  container.querySelectorAll("[data-segment-map]").forEach(btn => {
+    btn.addEventListener("click", () => focusSegment(btn.dataset.segmentMap));
+  });
+  container.querySelectorAll("[data-go]").forEach(btn => {
+    btn.addEventListener("click", () => { window.location.hash = btn.dataset.go; });
+  });
+}
+
+function districtLabel(districtId) {
+  if (!districtId) return "";
+  return String(districtId).replace(/^dist_/, "").split("_")
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 }
 
 function renderActiveCorridorRisks() {
   const container = document.getElementById("active-risks-container");
   if (!container) return;
 
-  const risks = [
-    { corridor: "NH-150 Kameng (km 42)", prob: "0.78", sev: "CRITICAL", desc: "Shale mudslide imminent" },
-    { corridor: "Mago Gorge Pass", prob: "0.88", sev: "CRITICAL", desc: "Bridge foundation scouring" },
-    { corridor: "Ukhrul High Pass", prob: "0.64", sev: "WARNING", desc: "Debris fall constriction" }
-  ];
+  // Real at-risk road segments from the pipeline, highest closure risk first.
+  const segs = topRiskSegments(6);
 
-  container.innerHTML = risks.map(r => `
-    <div class="risk-item-card ${r.sev.toLowerCase()}">
-      <div class="risk-item-top">
-        <span class="risk-tag ${r.sev.toLowerCase()}">${r.sev}</span>
-        <span class="risk-prob">Prob: ${r.prob}</span>
-      </div>
-      <div class="risk-location">${r.corridor}</div>
-      <div class="risk-reason">${r.desc}</div>
-    </div>
-  `).join("");
+  if (segs.length === 0) {
+    container.innerHTML = `<div class="empty-panel">No at-risk roads in the current forecast.</div>`;
+    return;
+  }
+
+  container.innerHTML = segs.map((s, i) => {
+    const p = s.properties;
+    const prob = p.closure_probability;
+    const critical = prob >= 0.5 || p.predicted_closed;
+    const sev = critical ? "critical" : (prob >= 0.25 ? "warning" : "low");
+    const sevLabel = critical ? "CRITICAL" : (prob >= 0.25 ? "WARNING" : "WATCH");
+    const reasons = Array.isArray(p.hazard_reasons) && p.hazard_reasons.length
+      ? p.hazard_reasons.join(" · ")
+      : [p.predicted_closed ? "Predicted closed" : null, p.slope_deg != null ? `slope ${Number(p.slope_deg).toFixed(1)}°` : null]
+          .filter(Boolean).join(" · ");
+    return `
+      <button type="button" class="risk-item-card ${sev}" data-risk-index="${i}" title="Zoom the map to this road">
+        <div class="risk-item-top">
+          <span class="risk-tag ${sev}">${sevLabel}</span>
+          <span class="risk-prob">${Math.round(prob * 100)}% closure</span>
+        </div>
+        <div class="risk-location">${escapeHtml(roadLabel(p))}</div>
+        ${reasons ? `<div class="risk-reason">${escapeHtml(reasons)}</div>` : ""}
+        <div class="risk-seg-id">${escapeHtml(p.segment_id)}${p.forecast_for_date ? ` &middot; forecast ${escapeHtml(p.forecast_for_date)}` : ""}</div>
+      </button>
+    `;
+  }).join("");
+
+  // Clicking a risk zooms whichever map is on screen to that road.
+  container.querySelectorAll("[data-risk-index]").forEach(btn => {
+    btn.onclick = () => {
+      const seg = segs[Number(btn.dataset.riskIndex)];
+      if (seg) showSegmentOnMap(seg);
+    };
+  });
 }
 
 async function fetchAuditTrail() {
@@ -1930,54 +3886,70 @@ function renderAuditTrailView() {
 }
 
 function renderTrackRecordView() {
+  const tr = trackRecordData || {};
+
+  // Overview summary card
+  setText("tr-total-pred", tr.total_predictions);
+  setText("tr-confirmed-pred", tr.confirmed_correct);
+  setText("tr-incorrect-pred", tr.incorrect);
+  setText("tr-missed-pred", tr.missed_closures);
+  if (typeof tr.hit_rate_pct === "number") setText("tr-hit-rate", `${tr.hit_rate_pct}%`);
+  if (tr.evaluation_period) {
+    setText("tr-period", [tr.evaluation_period, tr.data_provenance].filter(Boolean).join(" • "));
+  }
+
+  // District table: /track-record returns breakdown_by_district {district, total, correct, hit_rate %}
   const tableBody = document.querySelector("#tr-district-table tbody");
-  const outcomesCont = document.getElementById("tr-outcomes-container");
-
-  if (!window.trackRecordData || !window.trackRecordData.districts) return;
-
-  if (tableBody) {
-    tableBody.innerHTML = window.trackRecordData.districts.map(d => `
+  const districts = tr.breakdown_by_district || [];
+  if (tableBody && districts.length) {
+    tableBody.innerHTML = districts.map(d => `
       <tr>
-        <td>${d.district}</td>
-        <td>${d.total_predictions}</td>
-        <td>${d.correct_predictions}</td>
-        <td><strong style="color:${d.accuracy >= 0.75 ? '#34D399' : '#FBBF24'};">${(d.accuracy * 100).toFixed(1)}%</strong></td>
+        <td>${escapeHtml(d.district)}</td>
+        <td>${d.total}</td>
+        <td>${d.correct}</td>
+        <td><strong class="${d.hit_rate >= 75 ? 'text-green' : 'text-amber'}">${Number(d.hit_rate).toFixed(1)}%</strong></td>
       </tr>
     `).join("");
   }
 
-  if (outcomesCont && window.trackRecordData.recent_outcomes) {
+  // Recent outcomes {corridor, predicted, actual, status: CORRECT | MISSED | CORRECTED, note}
+  const outcomesCont = document.getElementById("tr-outcomes-container");
+  const outcomes = tr.recent_outcomes || [];
+  if (outcomesCont && outcomes.length) {
+    const tone = { CORRECT: "good", MISSED: "bad", CORRECTED: "warn" };
     outcomesCont.innerHTML = `
-      <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
-        <span class="pill-prov real">DATA PROVENANCE: ${window.trackRecordData.data_provenance || 'REAL'}</span>
+      <div class="tr-outcomes-head">
+        <span class="pill-prov real">DATA PROVENANCE: ${escapeHtml(tr.data_provenance || "REAL")}</span>
       </div>
-      <div style="display:flex; flex-direction:column; gap:10px;">
-    ` + window.trackRecordData.recent_outcomes.map(o => {
-      const isHit = o.prediction === o.actual;
-      const color = isHit ? '#34D399' : '#F87171';
-      const label = isHit ? '✓ CONFIRMED HIT' : '✕ MISSED PREDICTION';
-      
-      return `
-        <div style="background:#151D2F; padding:12px 16px; border-radius:6px; border-left:3px solid ${color}; display:flex; justify-content:space-between;">
-          <div>
-            <strong>${o.segment_id}</strong>
-            <div style="font-size:12px; color:var(--text-muted);">Predicted: ${o.prediction} &bull; Actual: ${o.actual}</div>
+      <div class="tr-outcome-list">
+        ${outcomes.map(o => `
+          <div class="tr-outcome ${tone[o.status] || "warn"}">
+            <div>
+              <strong>${escapeHtml(o.corridor)}</strong>
+              <div class="tr-outcome-meta">Predicted: ${escapeHtml(o.predicted)} &bull; Actual: ${escapeHtml(o.actual)}${o.note ? ` &bull; ${escapeHtml(o.note)}` : ""}</div>
+            </div>
+            <span class="tr-outcome-status">${escapeHtml(o.status)}</span>
           </div>
-          <span style="color:${color}; font-weight:700; text-transform:uppercase;">${label}</span>
-        </div>
-      `;
-    }).join("") + `</div>`;
+        `).join("")}
+      </div>
+    `;
   }
 }
 
 function renderAutomationStatus() {
   const summaryEl = document.getElementById("auto-summary-text");
   const lastRunEl = document.getElementById("auto-last-run");
-  if (automationStatusData && automationStatusData.summary_text) {
-    if (summaryEl) summaryEl.textContent = automationStatusData.summary_text;
-    if (lastRunEl && automationStatusData.last_automated_run) {
-      lastRunEl.textContent = `Last Run: ${new Date(automationStatusData.last_automated_run).toLocaleTimeString()}`;
-    }
+  const sidebarSub = document.getElementById("sidebar-status-sub");
+  const data = automationStatusData || {};
+  if (summaryEl && data.summary_text) summaryEl.textContent = data.summary_text;
+  if (lastRunEl && data.last_automated_run) {
+    lastRunEl.textContent = `Last run ${relTime(data.last_automated_run)}`;
+    lastRunEl.title = new Date(data.last_automated_run).toLocaleString();
+  }
+  const stages = Array.isArray(data.pipeline_stages) ? data.pipeline_stages : [];
+  if (sidebarSub && stages.length) {
+    const done = stages.filter(st => /COMPLETED|ACTIVE|OK/i.test(st.status || "")).length;
+    sidebarSub.textContent = `${done} of ${stages.length} pipeline stages complete${data.last_automated_run ? ` · ran ${relTime(data.last_automated_run)}` : ""}`;
   }
 }
 
@@ -2057,7 +4029,7 @@ function addUserMessage(msg) {
   const chatBox = document.getElementById("copilot-chat-box");
   const div = document.createElement("div");
   div.className = "copilot-msg user";
-  div.innerHTML = `<div class="msg-bubble">${msg}</div>`;
+  div.innerHTML = `<div class="msg-bubble">${escapeHtml(msg)}</div>`;
   chatBox.appendChild(div);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
@@ -2074,23 +4046,93 @@ function addBotMessage(msg) {
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
+function pendingDecisions() {
+  return [...liveDecisions].filter(d => d.status === "pending").sort(compareDecisions);
+}
+
+function decisionLine(d) {
+  const bits = [`send ${d.recommended_units}t ${escapeHtml(String(d.recommended_commodity).toLowerCase())}`, `VRI ${d.current_vri}`, `${d.cutoff_hours}h to cutoff`];
+  if (d.closure_probability != null) bits.push(`${Math.round(d.closure_probability * 100)}% road closure risk`);
+  return `<strong>${escapeHtml(d.village_name)}</strong> (${bits.join(", ")})`;
+}
+
+// Overview copilot bar + the suggested question that names a real village
+function renderCopilotSummary() {
+  const desc = document.getElementById("copilot-bar-desc");
+  const pending = pendingDecisions();
+  if (desc) {
+    if (pending.length) {
+      const top = pending[0];
+      desc.textContent = `${pending.length} pre-positioning decision${pending.length === 1 ? "" : "s"} waiting. Most urgent: ${top.village_name} (${top.district}), VRI ${top.current_vri}, ${top.cutoff_hours}h to predicted cutoff.`;
+    } else {
+      desc.textContent = "No pre-positioning decisions are waiting. Ask about any village, road or depot.";
+    }
+  }
+  const why = document.getElementById("copilot-suggest-why");
+  if (why && pending.length) {
+    const q = `Why is ${pending[0].village_name} high risk?`;
+    why.dataset.q = q;
+    why.textContent = `"${q}"`;
+  }
+}
+
+function findVillageInQuery(lower) {
+  const byDecision = liveDecisions.find(d => d.village_name && lower.includes(d.village_name.toLowerCase()));
+  if (byDecision) return { decision: byDecision, hab: habById.get(byDecision.village_id) };
+  const hab = (habitationsData || []).find(f => f.properties.name && f.properties.name.length > 3 && lower.includes(f.properties.name.toLowerCase()));
+  return hab ? { decision: null, hab } : null;
+}
+
+// Answers come from the live worklist and forecast, not canned text.
 function handleCopilotQuery(q) {
   const lower = q.toLowerCase();
+  const pending = pendingDecisions();
   let answer = "";
+  const match = findVillageInQuery(lower);
 
-  if (lower.includes("action") || lower.includes("today")) {
-    answer = `Today, <strong>3 habitations</strong> require urgent pre-positioning decisions: 
-    1) <strong>Ukhrul Sector</strong> (Send 12t rice, 38h to cutoff), 
-    2) <strong>Mago Valley</strong> (Send 8t medical kits, 19h to cutoff), 
-    3) <strong>Thingbu Camp</strong> (Send 15t wheat, 44h to cutoff). All 3 decisions are ready on your Worklist.`;
-  } else if (lower.includes("ukhrul")) {
-    answer = `<strong>Ukhrul Sector</strong> is marked High Risk because forecasted 114mm rainfall over 72h causes closure probability of 0.78 at Km 42. Village has single-lane road access with zero alternate vehicular bypass. Pre-positioning 12t rice is recommended.`;
-  } else if (lower.includes("48") || lower.includes("cutoff")) {
-    answer = `Villages projected to lose road access within 48 hours: <strong>Mago Valley</strong> (19h remaining), <strong>Ukhrul Sector</strong> (38h remaining), and <strong>Thingbu Camp</strong> (44h remaining).`;
-  } else if (lower.includes("12t") || lower.includes("rice") || lower.includes("recommend")) {
-    answer = `DHARA recommends <strong>12t rice to Ukhrul</strong> based on its population of 1,420 requiring 5 days of standard emergency caloric sustenance during anticipated corridor isolation.`;
+  if (match) {
+    const d = match.decision;
+    const hp = match.hab ? match.hab.properties : null;
+    if (d) {
+      const seg = d.nearest_segment_id ? segById.get(d.nearest_segment_id) : null;
+      answer = `${decisionLine(d)} is on the worklist. ` +
+        (seg && nearRoadIsLocal(d) ? `The nearest at-risk road, ${escapeHtml(roadLabel(seg.properties))}, has a ${Math.round(seg.properties.closure_probability * 100)}% predicted closure probability and passes ${d.nearest_segment_km.toFixed(1)} km away. ` : "") +
+        `Travel time goes from ${d.travel_time_now} now to ${d.travel_time_after} if it closes. ` +
+        `DHARA's reasoning: <em>"${escapeHtml(d.reasoning)}"</em>`;
+    } else if (hp) {
+      answer = `<strong>${escapeHtml(hp.name)}</strong> (${escapeHtml(districtLabel(hp.district_id))}) has a reachability index of <strong>${Number(hp.vri).toFixed(1)}</strong>. ` +
+        (hp.cutoff_status === "no_cutoff_in_window" ? "No cutoff is predicted in the forecast window, and there is no pending decision for it." : `Predicted cutoff in ${hp.hours_until_cutoff}h.`);
+    }
+  } else if (/action|today|pending|decid/.test(lower)) {
+    answer = pending.length
+      ? `<strong>${pending.length}</strong> decision${pending.length === 1 ? "" : "s"} waiting. The most urgent: <ol>${pending.slice(0, 3).map(d => `<li>${decisionLine(d)}</li>`).join("")}</ol>They are at the top of <strong>Today's Decisions</strong>.`
+      : "Nothing is waiting for a decision right now.";
+  } else if (/48|cutoff|cut off|lose access/.test(lower)) {
+    const soon = (habitationsData || [])
+      .filter(f => f.properties.cutoff_status !== "no_cutoff_in_window" && Number(f.properties.hours_until_cutoff) <= 48)
+      .sort((a, b) => a.properties.hours_until_cutoff - b.properties.hours_until_cutoff);
+    if (soon.length) {
+      answer = `<strong>${soon.length}</strong> village${soon.length === 1 ? "" : "s"} may lose road access within 48 hours: ${soon.slice(0, 5).map(f => `<strong>${escapeHtml(f.properties.name)}</strong> (${f.properties.hours_until_cutoff}h)`).join(", ")}.`;
+    } else {
+      const lowest = [...(habitationsData || [])].sort((a, b) => a.properties.vri - b.properties.vri)[0];
+      answer = "No village is predicted to lose road access within 48 hours in the current forecast." +
+        (lowest ? ` The lowest reachability is <strong>${escapeHtml(lowest.properties.name)}</strong> at VRI ${Number(lowest.properties.vri).toFixed(1)}.` : "");
+    }
+  } else if (/recommend|rice|ration|how much|quantity/.test(lower)) {
+    const d = pending[0];
+    answer = d
+      ? `For ${decisionLine(d)}, the decision agent recommends pre-positioning from <strong>${escapeHtml(d.source_depot)}</strong> before ${escapeHtml(d.latest_departure)}. Its reasoning: <em>"${escapeHtml(d.reasoning)}"</em>`
+      : "There is no pending recommendation right now.";
+  } else if (/road|segment|closure|corridor/.test(lower)) {
+    const segs = topRiskSegments(3);
+    answer = segs.length
+      ? `Highest predicted closure risk: <ol>${segs.map(s => `<li><strong>${escapeHtml(roadLabel(s.properties))}</strong> <span class="mono">${escapeHtml(s.properties.segment_id)}</span>: ${Math.round(s.properties.closure_probability * 100)}%${s.properties.predicted_closed ? ", predicted closed" : ""}</li>`).join("")}</ol>`
+      : "No at-risk roads are loaded in the current forecast.";
   } else {
-    answer = `I have cross-checked the PostGIS database. Currently, 25620 VRI forecasts and 1540 weather observations are ingested. All critical dispatches are prioritized on your <strong>Today's Decisions Worklist</strong>.`;
+    const cov = coverageData && typeof coverageData.habitations_count === "number" ? coverageData : null;
+    answer = cov
+      ? `DHARA is tracking <strong>${cov.habitations_count.toLocaleString()}</strong> habitations and <strong>${cov.road_segments_count}</strong> road segments, with <strong>${Number(cov.weather_forecasts_count || 0).toLocaleString()}</strong> weather forecasts ingested. ${pending.length} decision${pending.length === 1 ? " is" : "s are"} waiting on your worklist. Try asking about a village by name, road closures, or what needs action today.`
+      : "I can answer from the live worklist and forecast: ask what needs action today, which villages may be cut off, or about a village by name.";
   }
 
   addBotMessage(answer);
@@ -2101,6 +4143,74 @@ function handleCopilotQuery(q) {
 // ====================================================
 let mapLayerControl = null;
 let mapLayers = {};
+let mapBasemaps = {};
+let basemapPinned = false; // true once the officer picks a basemap by hand
+let basemapFallbackUsed = false;
+let mapFilter = "all";     // "all" | "risk" (VRI < 70) | "cutoff" (VRI < 30)
+
+const MAP_FILTERS = {
+  all: () => true,
+  risk: (vri) => vri < 70,
+  cutoff: (vri) => vri < 30
+};
+
+const ESRI_ATTR = 'Tiles &copy; <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>';
+
+function esriLayer(service, opts = {}) {
+  return L.tileLayer(`https://server.arcgisonline.com/ArcGIS/rest/services/${service}/MapServer/tile/{z}/{y}/{x}`,
+    Object.assign({ maxZoom: 18, maxNativeZoom: 16, attribution: ESRI_ATTR }, opts));
+}
+
+// Keyless basemaps. "light" and "dark" follow the theme: both show terrain,
+// rivers, roads and place names so officers can read the hills they're
+// planning around (the plain gray canvas was nearly empty up close).
+function buildBasemaps() {
+  return {
+    light: L.layerGroup([esriLayer("World_Topo_Map", { maxNativeZoom: 17 })]),
+    dark: L.layerGroup([
+      esriLayer("Canvas/World_Dark_Gray_Base"),
+      esriLayer("Elevation/World_Hillshade_Dark", { maxNativeZoom: 13, opacity: 0.55 }),
+      esriLayer("Canvas/World_Dark_Gray_Reference")
+    ]),
+    gray: L.layerGroup([esriLayer("Canvas/World_Light_Gray_Base"), esriLayer("Canvas/World_Light_Gray_Reference")]),
+    streets: L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 18,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
+    }),
+    satellite: esriLayer("World_Imagery", { maxNativeZoom: 17 })
+  };
+}
+
+// If the Esri tile service doesn't answer (offline, firewall), switch to
+// OpenStreetMap once instead of leaving a blank map.
+function watchBasemap(group) {
+  let loads = 0;
+  let errors = 0;
+  const layers = group.eachLayer ? [] : [group];
+  if (group.eachLayer) group.eachLayer(l => layers.push(l));
+  layers.forEach(layer => {
+    layer.on("tileload", () => { loads++; });
+    layer.on("tileerror", () => {
+      errors++;
+      if (errors >= 6 && loads === 0 && !basemapFallbackUsed && map && map.hasLayer(group)) {
+        basemapFallbackUsed = true;
+        map.removeLayer(group);
+        mapBasemaps.streets.addTo(map);
+        mapBasemaps.streets.bringToBack();
+        basemapPinned = true;
+        showToast("The terrain map didn't load, so DHARA switched to the OpenStreetMap base map.", "warning");
+      }
+    });
+  });
+}
+
+function depotIcon() {
+  return L.divIcon({ className: "map-icon depot", html: icon("home", 14), iconSize: [28, 28], iconAnchor: [14, 14] });
+}
+
+function truckIcon(emphasis = false) {
+  return L.divIcon({ className: `map-icon truck${emphasis ? " emphasis" : ""}`, html: icon("truck", 13), iconSize: [26, 26], iconAnchor: [13, 13] });
+}
 
 function initMap() {
   const mapEl = document.getElementById("map");
@@ -2109,8 +4219,7 @@ function initMap() {
   // Never initialize Leaflet while its container is hidden (display:none) —
   // it measures a 0x0 box, computes the wrong tile grid, and the basemap
   // renders as solid black blocks instead of tiles. Bail out here; the
-  // overview route handler calls initMap() again once the container is
-  // actually visible.
+  // route handler calls initMap() again once the container is visible.
   if (mapEl.offsetParent === null || mapEl.clientWidth === 0 || mapEl.clientHeight === 0) {
     return;
   }
@@ -2129,43 +4238,58 @@ function initMap() {
       preferCanvas: true // Use canvas for performance with many markers
     });
 
-    // CARTO basemaps now require an API key (tiles render "API KEY REQUIRED"),
-    // so use keyless providers. Esri Light Gray suits the cream UI and keeps
-    // data overlays readable; OSM and satellite imagery are switchable.
-    const esriAttr = 'Tiles &copy; <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>';
-    const esri = (service) => L.tileLayer(`https://server.arcgisonline.com/ArcGIS/rest/services/${service}/MapServer/tile/{z}/{y}/{x}`, {
-      maxZoom: 18, maxNativeZoom: 16, attribution: esriAttr
+    mapBasemaps = buildBasemaps();
+    Object.values(mapBasemaps).forEach(watchBasemap);
+    mapBasemaps[currentTheme()].addTo(map);
+    map.on("baselayerchange", () => { basemapPinned = true; });
+
+    // "Show everything" sits right under the zoom buttons.
+    const ResetControl = L.Control.extend({
+      options: { position: "topleft" },
+      onAdd() {
+        const wrap = L.DomUtil.create("div", "leaflet-bar map-reset-control");
+        const a = L.DomUtil.create("a", "", wrap);
+        a.href = "#";
+        a.title = "Show everything";
+        a.setAttribute("role", "button");
+        a.setAttribute("aria-label", "Show everything on the map");
+        a.innerHTML = icon("home", 15);
+        L.DomEvent.on(a, "click", (e) => {
+          L.DomEvent.preventDefault(e);
+          L.DomEvent.stopPropagation(e);
+          mapLayers.selection.clearLayers();
+          map.closePopup();
+          fitAllData();
+        });
+        return wrap;
+      }
     });
-    const basemap = L.layerGroup([
-      esri('Canvas/World_Light_Gray_Base'),
-      esri('Canvas/World_Light_Gray_Reference')
-    ]).addTo(map);
-    const osmBasemap = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
-    });
-    const satelliteBasemap = esri('World_Imagery');
+    new ResetControl().addTo(map);
 
     mapLayers.habitations = L.layerGroup().addTo(map);
     mapLayers.roads = L.layerGroup().addTo(map);
     mapLayers.vehicles = L.layerGroup().addTo(map);
     mapLayers.incidents = L.layerGroup().addTo(map);
     mapLayers.dispatches = L.layerGroup().addTo(map);
-    
+    mapLayers.context = L.layerGroup().addTo(map);   // this page's highlighted items
+    mapLayers.selection = L.layerGroup().addTo(map); // focus ring; not listed in the layer switcher
+
     mapLayerControl = L.control.layers({
-      "Light Gray (Esri)": basemap,
-      "Streets (OpenStreetMap)": osmBasemap,
-      "Satellite (Esri)": satelliteBasemap
+      "Terrain": mapBasemaps.light,
+      "Terrain, dark": mapBasemaps.dark,
+      "Light gray": mapBasemaps.gray,
+      "Streets (OpenStreetMap)": mapBasemaps.streets,
+      "Satellite (Esri)": mapBasemaps.satellite
     }, {
-      "🏘️ Habitations": mapLayers.habitations,
-      "🛣️ At-Risk Roads": mapLayers.roads,
-      "🚚 Fleet & Vehicles": mapLayers.vehicles,
-      "📦 Active Dispatches": mapLayers.dispatches,
-      "⚠️ Field Incidents": mapLayers.incidents
-    }, { collapsed: true, position: 'topleft' }).addTo(map); // top-right is taken by the VRI legend
+      "Villages (reachability)": mapLayers.habitations,
+      "At-risk roads": mapLayers.roads,
+      "Relief trucks": mapLayers.vehicles,
+      "Supply depots": mapLayers.dispatches,
+      "Field incidents": mapLayers.incidents
+    }, { collapsed: true, position: 'topleft' }).addTo(map); // top-right is taken by the map key
 
-    updateMapLayers();
-
+    // Attach the tool panels before drawing data, so one bad data row can't
+    // stop the hazard intel, 3D terrain and map notes tools from appearing.
     // Live hazard intel overlays (NASA GIBS, RainViewer, USGS, Open-Meteo) — see intel-layers.js
     if (window.DharaIntel) window.DharaIntel.attach(map);
     // Lazy-loaded 3D terrain view (CesiumJS + keyless terrain) — see terrain3d.js
@@ -2173,19 +4297,35 @@ function initMap() {
     // Shared officer map notes, measuring, situation snapshot — see ops-tools.js
     if (window.DharaOps) window.DharaOps.attach(map);
 
+    // Village dots grow as you zoom in, so 3,660 of them stay readable.
+    map.on("zoomend", resizeHabitationMarkers);
+    map.on("click", () => mapLayers.selection.clearLayers());
+    map.on("overlayadd overlayremove", syncLayerToggles);
+
+    safeUpdateMapLayers();
+    computeAllDataBounds();
+    if (habitationsData.length) mapFramedWithData = true;
+
+    // Keep the Live Map toolbar's pressed state in step with the in-map
+    // panel buttons, which toggle the same panels.
+    const controls = mapEl.querySelector(".leaflet-control-container");
+    if (controls && typeof MutationObserver !== "undefined") {
+      new MutationObserver(syncMapToolbar).observe(controls, { attributes: true, attributeFilter: ["class"], subtree: true });
+    }
+
     // Re-measure a couple of times shortly after init — fonts/layout can
     // still shift the container size right after it becomes visible.
     setTimeout(() => { if (map) map.invalidateSize(); }, 250);
     setTimeout(() => { if (map) map.invalidateSize(); }, 750);
 
     // Keep tracking the container's real size for as long as the map
-    // lives — sidebar collapse, window resize, font swap, etc. would
-    // otherwise leave Leaflet's internal size stale and the basemap would
-    // only paint tiles for the old (smaller) box, leaving blank margins.
+    // lives — hiding the side panel, sidebar collapse, window resize, etc.
+    // would otherwise leave Leaflet's internal size stale and the basemap
+    // would only paint the old box.
     if (typeof ResizeObserver !== "undefined") {
       const wrapperEl = mapEl.closest(".map-viewport-wrapper") || mapEl;
       const ro = new ResizeObserver(() => {
-        if (map) map.invalidateSize();
+        if (map) map.invalidateSize({ debounceMoveend: true });
       });
       ro.observe(wrapperEl);
     }
@@ -2194,9 +4334,62 @@ function initMap() {
   }
 }
 
+// Swap the terrain basemap to match the theme, unless the officer chose one.
+function syncBasemapToTheme() {
+  if (!map || basemapPinned || !mapBasemaps.light) return;
+  const want = mapBasemaps[currentTheme()];
+  const other = currentTheme() === "dark" ? mapBasemaps.light : mapBasemaps.dark;
+  if (map.hasLayer(other)) map.removeLayer(other);
+  if (!map.hasLayer(want)) {
+    want.addTo(map);
+    // Base tiles belong under the data and hazard overlays.
+    want.eachLayer(l => l.bringToBack && l.bringToBack());
+  }
+}
+
+function mapPalette() {
+  return {
+    red: cssVar("--map-red") || "#DC2626",
+    amber: cssVar("--map-amber") || "#D97706",
+    green: cssVar("--map-green") || "#10B981",
+    blue: cssVar("--map-blue") || "#2563EB",
+    depot: cssVar("--map-depot") || "#312622",
+    stroke: cssVar("--marker-stroke") || "#FFFFFF",
+    casing: cssVar("--map-casing") || "#FFFFFF"
+  };
+}
+
+function habRadius(zoom) {
+  if (zoom <= 6) return 2;
+  if (zoom <= 7) return 3;
+  if (zoom <= 8) return 4;
+  if (zoom <= 9) return 5;
+  return 6.5;
+}
+
+function habStrokeWeight(zoom) {
+  return zoom < 9 ? 0.5 : 1;
+}
+
+function resizeHabitationMarkers() {
+  if (!map || !mapLayers.habitations) return;
+  const z = map.getZoom();
+  const r = habRadius(z);
+  const w = habStrokeWeight(z);
+  mapLayers.habitations.eachLayer(l => {
+    if (l.setRadius) {
+      l.setRadius(r);
+      l.setStyle({ weight: w });
+    }
+  });
+}
+
 window.updateMapLayers = function() {
   if (!map) return;
-  
+  const c = mapPalette();
+  const z = map.getZoom();
+  const keep = MAP_FILTERS[mapFilter] || MAP_FILTERS.all;
+
   // Clear existing
   mapLayers.habitations.clearLayers();
   mapLayers.roads.clearLayers();
@@ -2204,200 +4397,333 @@ window.updateMapLayers = function() {
   mapLayers.incidents.clearLayers();
   mapLayers.dispatches.clearLayers();
 
-  // Habitations
+  // Habitations: highest VRI first, so red/amber dots are painted on top.
   if (habitationsData) {
-    habitationsData.forEach(f => {
+    const rows = habitationsData
+      .map(f => ({ f, vri: Number(f.properties.vri) }))
+      .filter(r => Number.isFinite(r.vri) && keep(r.vri))
+      .sort((a, b) => b.vri - a.vri);
+
+    rows.forEach(({ f, vri }) => {
       const p = f.properties;
       const coords = f.geometry.coordinates;
 
-      // Derive both the dot color AND the popup's risk label from the same
-      // `vri` value/thresholds used in the map legend (High Reachability
-      // >=70 / Moderate 30-69 / Cut-Off <30). Previously the label used a
-      // separate `reachability_prob` field with its own unrelated 0.5
-      // cutoff, so a red "severe risk" dot could show "Risk: LOW" — the
-      // color and text were never guaranteed to agree.
+      // Dot color and popup label come from the same `vri` thresholds as the
+      // map legend (High >=70 / Moderate 30-69 / Cut-off risk <30).
       let color, riskLabel;
-      if (p.vri < 30) {
-        color = '#DC2626'; riskLabel = 'HIGH — Cut-Off / Severe Risk';
-      } else if (p.vri < 70) {
-        color = '#D97706'; riskLabel = 'MODERATE';
+      if (vri < 30) {
+        color = c.red; riskLabel = 'May be cut off';
+      } else if (vri < 70) {
+        color = c.amber; riskLabel = 'Access at risk';
       } else {
-        color = '#10B981'; riskLabel = 'LOW — High Reachability';
+        color = c.green; riskLabel = 'Easy to reach';
       }
 
       const marker = L.circleMarker([coords[1], coords[0]], {
-        radius: 6, fillColor: color, color: '#FFFFFF', weight: 1, opacity: 1, fillOpacity: 0.9
+        radius: habRadius(z), fillColor: color, color: c.stroke, weight: habStrokeWeight(z), opacity: 1, fillOpacity: 0.9
       });
 
-      marker.bindPopup(`<strong>📍 ${p.name}</strong><br>VRI: ${p.vri.toFixed(1)}/100<br>Risk: ${riskLabel}<br>Cutoff: ${p.hours_until_cutoff ? p.hours_until_cutoff + 'h' : 'N/A'}`);
+      marker.bindTooltip(`${escapeHtml(p.name)} · ${riskLabel}`, { direction: "top", offset: [0, -4], className: "map-tip" });
+      const cutoffText = p.cutoff_status === "no_cutoff_in_window" ? "No cutoff expected this week" : (p.hours_until_cutoff ? `Could be cut off in ${p.hours_until_cutoff}h` : "—");
+      marker.bindPopup(`<strong>${escapeHtml(p.name)}</strong><br><span class="popup-status" style="--dot:${color}">${riskLabel}</span><br>Reachability index: <strong>${vri.toFixed(0)}</strong> / 100<br>${cutoffText}${p.population ? `<br>Population: ${Number(p.population).toLocaleString()}` : ""}`);
       mapLayers.habitations.addLayer(marker);
     });
   }
 
-  // Roads
+  // Roads: a light outline underneath so they stand out on the terrain map,
+  // and the riskier the road the thicker the line.
   if (atRiskSegmentsData) {
+    const roadWidth = (prob) => (prob >= 0.5 ? 5 : prob >= 0.25 ? 4 : 2.5);
+    const roadColor = (prob) => (prob >= 0.5 ? c.red : prob >= 0.25 ? c.amber : c.blue);
+    L.geoJSON(atRiskSegmentsData, {
+      style: (feature) => ({ color: c.casing, weight: roadWidth(feature.properties.closure_probability) + 3, opacity: 0.9, lineCap: "round" }),
+      interactive: false
+    }).addTo(mapLayers.roads);
     L.geoJSON(atRiskSegmentsData, {
       style: function(feature) {
         const prob = feature.properties.closure_probability;
-        const color = prob >= 0.5 ? '#DC2626' : (prob >= 0.25 ? '#D97706' : '#2563EB');
-        return { color: color, weight: 3, opacity: 0.8 };
+        return { color: roadColor(prob), weight: roadWidth(prob), opacity: 0.95, lineCap: "round" };
       },
       onEachFeature: function(feature, layer) {
-        layer.bindPopup(`<strong>🛣️ Segment ${feature.properties.segment_id}</strong><br>Risk: ${feature.properties.closure_probability.toFixed(2)}<br>Type: ${feature.properties.road_type}`);
+        const p = feature.properties;
+        const prob = Number(p.closure_probability);
+        const pct = Number.isFinite(prob) ? `${Math.round(prob * 100)}%` : "—";
+        const verdict = prob >= 0.5 ? "Likely to close" : prob >= 0.25 ? "At risk of closing" : "Open, being watched";
+        layer.bindTooltip(`${escapeHtml(roadLabel(p))} · ${pct} chance of closure`, { sticky: true, className: "map-tip" });
+        layer.bindPopup(`<strong>${escapeHtml(roadLabel(p))}</strong><br><span class="popup-status" style="--dot:${roadColor(prob)}">${verdict}</span><br>Chance of closure: <strong>${pct}</strong>${p.predicted_closed ? " · predicted closed" : ""}<br>Slope ${p.slope_deg != null ? Number(p.slope_deg).toFixed(1) + "°" : "—"} · landslide class ${p.landslide_class ?? "—"}<br><span class="mono">${escapeHtml(p.segment_id)}</span>`);
       }
     }).addTo(mapLayers.roads);
   }
-  
+
   // Vehicles
   if (vehiclesData) {
     vehiclesData.forEach(v => {
-      const marker = L.circleMarker([v.coordinates[1], v.coordinates[0]], {
-        radius: 7, fillColor: '#2563EB', color: '#FFFFFF', weight: 2, opacity: 1, fillOpacity: 0.9
-      });
-      marker.bindPopup(`<strong>🚚 ${v.vehicle_id}</strong><br>Speed: ${v.speed_kmh} km/h<br>Status: ${v.status}<br><span style="font-size:10px; background:#4B5563; padding:2px 4px; border-radius:4px; color:white;">SIMULATED GPS</span>`);
+      if (!v.coordinates) return;
+      const marker = L.marker([v.coordinates[1], v.coordinates[0]], { icon: truckIcon(), keyboard: false });
+      marker.bindTooltip(`Relief truck ${escapeHtml(v.vehicle_id)} · ${escapeHtml(v.status)}`, { direction: "top", offset: [0, -12], className: "map-tip" });
+      marker.bindPopup(`<strong>${escapeHtml(v.vehicle_id)}</strong><br>Speed: ${v.speed_kmh} km/h<br>Status: ${escapeHtml(v.status)}<br><span class="map-badge">SIMULATED GPS</span>`);
       mapLayers.vehicles.addLayer(marker);
     });
   }
 
-  // Depots/Dispatches
+  // Depots
   if (depotsData) {
     depotsData.forEach(d => {
       if (!d.location || !d.location.coordinates) return;
       const coords = d.location.coordinates;
-      const marker = L.circleMarker([coords[1], coords[0]], {
-        radius: 9, fillColor: '#16A34A', color: '#FFFFFF', weight: 2, opacity: 1, fillOpacity: 0.95
-      });
-      marker.bindPopup(`<strong>🏢 ${d.name}</strong><br>Relief Stock (Rice): ${d.stock.rice_tonnes}t<br>Vehicles Available: ${d.vehicles_available}`);
+      const marker = L.marker([coords[1], coords[0]], { icon: depotIcon(), keyboard: false });
+      const rice = d.stock && d.stock.rice_tonnes != null ? `${d.stock.rice_tonnes}t` : "N/A";
+      marker.bindTooltip(`Supply depot · ${escapeHtml(d.name)}`, { direction: "top", offset: [0, -14], className: "map-tip" });
+      marker.bindPopup(`<strong>${escapeHtml(d.name)}</strong><br>Relief stock (rice): ${rice}<br>Vehicles available: ${d.vehicles_available}`);
       mapLayers.dispatches.addLayer(marker);
     });
   }
 }
 
+// ---------- Legend: village filter + collapse ----------
+function renderMapFilterCounts() {
+  const vris = (habitationsData || []).map(f => Number(f.properties.vri)).filter(Number.isFinite);
+  const counts = {
+    all: vris.length,
+    risk: vris.filter(v => v < 70).length,
+    cutoff: vris.filter(v => v < 30).length
+  };
+  const probs = (atRiskSegmentsData || []).map(sg => Number(sg.properties.closure_probability)).filter(Number.isFinite);
+  const guide = {
+    green: vris.filter(v => v >= 70).length,
+    amber: vris.filter(v => v >= 30 && v < 70).length,
+    red: counts.cutoff,
+    "road-red": probs.filter(v => v >= 0.5).length,
+    "road-amber": probs.filter(v => v >= 0.25 && v < 0.5).length,
+    "road-blue": probs.filter(v => v < 0.25).length,
+    depots: (depotsData || []).length,
+    trucks: (vehiclesData || []).length
+  };
+  document.querySelectorAll("[data-guide-count]").forEach(el => {
+    const n = guide[el.dataset.guideCount];
+    el.textContent = n != null ? n.toLocaleString() : "";
+  });
+  document.querySelectorAll("[data-filter-count]").forEach(el => {
+    const n = counts[el.dataset.filterCount];
+    el.textContent = n != null ? n.toLocaleString() : "";
+  });
+}
+
+function initMapLegend() {
+  document.querySelectorAll("[data-map-filter]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      mapFilter = btn.dataset.mapFilter;
+      document.querySelectorAll("[data-map-filter]").forEach(b => {
+        const on = b.dataset.mapFilter === mapFilter;
+        b.classList.toggle("active", on);
+        b.setAttribute("aria-pressed", String(on));
+      });
+      safeUpdateMapLayers();
+    });
+  });
+
+  const toggle = document.getElementById("btn-legend-toggle");
+  if (!toggle) return;
+  syncLegendToMapSize();
+  toggle.addEventListener("click", () => {
+    const legend = document.getElementById("map-legend");
+    setLegendCollapsed(!legend.classList.contains("collapsed"));
+  });
+}
+
+function setLegendCollapsed(collapsed) {
+  const legend = document.getElementById("map-legend");
+  const toggle = document.getElementById("btn-legend-toggle");
+  if (!legend || !toggle) return;
+  legend.classList.toggle("collapsed", collapsed);
+  toggle.setAttribute("aria-expanded", String(!collapsed));
+}
+
+// The full key opens on a roomy map and folds to a "Map key" button on a
+// small one, where it would cover the villages. Officers can open or close
+// it any time; it is tidied again when the map crosses between roomy and small.
+let legendRoomy = null;
+
+function syncLegendToMapSize() {
+  const view = document.getElementById("map-viewport");
+  if (!view || !view.clientWidth) return;
+  const roomy = view.clientWidth >= 620 && view.clientHeight >= 500;
+  if (roomy === legendRoomy) return;
+  legendRoomy = roomy;
+  setLegendCollapsed(!roomy);
+}
+
+
+// ---------- Charts ----------
+function chartColors() {
+  return {
+    text: cssVar("--text-secondary"),
+    muted: cssVar("--text-muted"),
+    grid: cssVar("--chart-grid"),
+    card: cssVar("--bg-card"),
+    blue: cssVar("--accent-blue"),
+    cyan: cssVar("--accent-cyan"),
+    green: cssVar("--accent-green"),
+    red: cssVar("--accent-red"),
+    amber: cssVar("--accent-amber"),
+    purple: cssVar("--accent-purple")
+  };
+}
+
+const charts = {};
+
+// Create a chart once, then update it in place on each data refresh.
+function upsertChart(key, canvasId, config) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const existing = charts[key];
+  if (existing) {
+    existing.data = config.data;
+    existing.options = config.options;
+    existing.update("none");
+    return;
+  }
+  charts[key] = new Chart(canvas.getContext("2d"), config);
+}
+
+// Chart.js draws on canvas, so a theme switch means rebuilding the charts.
+function refreshChartsForTheme() {
+  Object.keys(charts).forEach(key => {
+    charts[key].destroy();
+    delete charts[key];
+  });
+  initAnalyticsCharts();
+}
+
+const VRI_BANDS = [
+  { label: "Under 30", test: v => v < 30, tone: "red", alpha: 1 },
+  { label: "30–50", test: v => v >= 30 && v < 50, tone: "amber", alpha: 1 },
+  { label: "50–70", test: v => v >= 50 && v < 70, tone: "amber", alpha: 0.55 },
+  { label: "70–85", test: v => v >= 70 && v < 85, tone: "green", alpha: 0.55 },
+  { label: "85+", test: v => v >= 85, tone: "green", alpha: 1 }
+];
 
 function initAnalyticsCharts() {
-  // 1. VRI Trend Chart
-  const vriCanvas = document.getElementById("chart-vri-trend");
-  if (vriCanvas && !chartVriTrend) {
-    const ctx = vriCanvas.getContext("2d");
-    chartVriTrend = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"],
-        datasets: [
-          {
-            label: "Average VRI Reachability",
-            data: [78, 74, 68, 52, 45, 38, 34],
-            borderColor: "#2563EB",
-            backgroundColor: "rgba(37, 99, 235, 0.08)",
-            fill: true,
-            tension: 0.3
-          },
-          {
-            label: "Rainfall Forecast (mm)",
-            data: [15, 28, 65, 114, 98, 45, 20],
-            borderColor: "#0284C7",
-            borderDash: [4, 4],
-            tension: 0.3
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { labels: { color: "#58554F", font: { size: 11, family: "'Plus Jakarta Sans'" } } } },
-        scales: {
-          x: { grid: { color: "#EAE5DE" }, ticks: { color: "#7E7971" } },
-          y: { grid: { color: "#EAE5DE" }, ticks: { color: "#7E7971" } }
-        }
-      }
-    });
-  }
+  if (typeof Chart === "undefined") return;
+  const c = chartColors();
+  const font = { size: 11, family: "'Plus Jakarta Sans'" };
+  Chart.defaults.font.family = "'Plus Jakarta Sans', system-ui, sans-serif";
+  Chart.defaults.color = c.muted;
+  const axes = (extraY = {}) => ({
+    x: { grid: { color: c.grid }, ticks: { color: c.muted } },
+    y: Object.assign({ grid: { color: c.grid }, ticks: { color: c.muted } }, extraY)
+  });
 
-  // 2. District Breakdown Chart
-  const distCanvas = document.getElementById("chart-district-breakdown");
-  if (distCanvas && !chartDistrictBreakdown) {
-    const ctx = distCanvas.getContext("2d");
-    chartDistrictBreakdown = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: ["West Kameng", "Tawang", "East Kameng", "Papum Pare", "Lohit"],
-        datasets: [
-          {
-            label: "Threatened Habitations",
-            data: [6, 4, 3, 1, 2],
-            backgroundColor: ["#DC2626", "#D97706", "#2563EB", "#10B981", "#7C3AED"],
-            borderRadius: 6
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { grid: { color: "#EAE5DE" }, ticks: { color: "#7E7971" } },
-          y: { grid: { color: "#EAE5DE" }, ticks: { color: "#7E7971", stepSize: 1 } }
-        }
-      }
-    });
-  }
-
-  // 3. Depot Stock Chart
-  const depotCanvas = document.getElementById("chart-depot-stocks");
-  if (depotCanvas && !chartDepotStocks) {
-    const ctx = depotCanvas.getContext("2d");
-    chartDepotStocks = new Chart(ctx, {
-      type: "doughnut",
-      data: {
-        labels: ["Rice & Grains (t)", "Medical Kits (10s)", "Water Rations (kL)"],
-        datasets: [{
-          data: [355, 740, 50],
-          backgroundColor: ["#2563EB", "#10B981", "#0284C7"]
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom', labels: { color: "#58554F", font: { size: 11, family: "'Plus Jakarta Sans'" } } } }
-      }
-    });
-  }
-
-  // 4. Track Record Trend Chart
-  const accCanvas = document.getElementById("chart-accuracy-trend");
-  if (accCanvas && !chartAccuracyTrend) {
-    const ctx = accCanvas.getContext("2d");
-    chartAccuracyTrend = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-        datasets: [{
-          label: "Prediction Hit Rate (%)",
-          data: [72, 75, 81, 78.6],
-          borderColor: "#10B981",
-          backgroundColor: "rgba(16, 185, 129, 0.08)",
+  // 1. 7-day reachability forecast from /forecast
+  const fc = forecastData && Array.isArray(forecastData.summary) ? forecastData.summary : null;
+  const labels = fc
+    ? fc.map(s => new Date(s.forecast_date).toLocaleDateString("en-IN", { weekday: "short", day: "numeric" }))
+    : ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"];
+  const round1 = (v) => (v == null ? null : Math.round(Number(v) * 10) / 10);
+  upsertChart("vri", "chart-vri-trend", {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Average village VRI",
+          data: fc ? fc.map(s => round1(s.avg_vri)) : [],
+          borderColor: c.blue,
+          backgroundColor: withAlpha(c.blue, 0.1),
           fill: true,
-          tension: 0.3
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { grid: { color: "#EAE5DE" }, ticks: { color: "#7E7971" } },
-          y: { min: 50, max: 100, grid: { color: "#EAE5DE" }, ticks: { color: "#7E7971" } }
+          tension: 0.3,
+          pointRadius: 3
+        },
+        {
+          label: "Lowest village VRI",
+          data: fc ? fc.map(s => round1(s.min_vri)) : [],
+          borderColor: c.red,
+          borderDash: [4, 4],
+          tension: 0.3,
+          pointRadius: 3
         }
-      }
-    });
-  }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      plugins: { legend: { labels: { color: c.text, font } } },
+      scales: axes({ suggestedMin: 0, suggestedMax: 100, title: { display: true, text: "VRI (0–100)", color: c.muted, font } })
+    }
+  });
+
+  // 2. Villages by reachability band (from the loaded habitations)
+  const vris = (habitationsData || []).map(f => Number(f.properties.vri)).filter(Number.isFinite);
+  upsertChart("bands", "chart-district-breakdown", {
+    type: "bar",
+    data: {
+      labels: VRI_BANDS.map(b => b.label),
+      datasets: [{
+        label: "Villages",
+        data: VRI_BANDS.map(b => vris.filter(b.test).length),
+        backgroundColor: VRI_BANDS.map(b => withAlpha(c[b.tone], b.alpha)),
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: axes({ beginAtZero: true, title: { display: true, text: "Villages", color: c.muted, font } })
+    }
+  });
+
+  // 3. Rice stock by depot (/depots)
+  const depots = currentDepots();
+  upsertChart("depots", "chart-depot-stocks", {
+    type: "bar",
+    data: {
+      labels: depots.map(d => d.name.replace(/ (Regional )?(Relief )?(Hub|Depot)$/i, "")),
+      datasets: [{
+        label: "Rice (tonnes)",
+        data: depots.map(d => (d.stock && d.stock.rice_tonnes) || 0),
+        backgroundColor: withAlpha(c.blue, 0.8),
+        borderRadius: 6
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: axes({ grid: { display: false } })
+    }
+  });
+
+  // 4. Track Record Trend Chart (demo evaluation series; the page says so)
+  upsertChart("accuracy", "chart-accuracy-trend", {
+    type: "line",
+    data: {
+      labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+      datasets: [{
+        label: "Prediction hit rate (%)",
+        data: [72, 75, 81, 78.6],
+        borderColor: c.green,
+        backgroundColor: withAlpha(c.green, 0.1),
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: axes({ min: 50, max: 100 })
+    }
+  });
 
   // Note: the Leaflet map is intentionally NOT initialized here. This
-  // function runs on initial page load, before the officer dashboard is
-  // ever shown, so the #map container is still display:none — initializing
+  // function runs on initial page load, possibly before the map's view is
+  // shown, so the #map container may still be display:none — initializing
   // Leaflet against a hidden/zero-size container is what caused the basemap
-  // to render as solid black blocks. handleRoute() initializes the map once
-  // the Overview view actually becomes visible.
+  // to render as solid black blocks. ensureMap() initializes the map once an
+  // officer page (and so the map) is actually visible.
 }
 
 // ====================================================

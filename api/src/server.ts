@@ -1,7 +1,11 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
+import multipart from "@fastify/multipart";
 import { Pool } from "pg";
 import { z } from "zod";
+import { createReadStream, mkdirSync, promises as fsp } from "fs";
+import path from "path";
+import { randomUUID } from "crypto";
 
 const PORT = parseInt(process.env.PORT || "3001", 10);
 // 127.0.0.1, not localhost: Node resolves localhost to ::1 first, and Docker
@@ -19,6 +23,19 @@ const app = Fastify({
 app.register(cors, {
   origin: "*",
   methods: ["GET", "POST", "DELETE"],
+});
+
+// Driver photo reports (POST /field-photos). The driver page shrinks photos
+// to ~1600 px JPEGs before upload, so 6 MB per file is generous.
+const MAX_PHOTOS = 4;
+app.register(multipart, {
+  limits: { fileSize: 6 * 1024 * 1024, files: MAX_PHOTOS, fields: 20, fieldSize: 2048, parts: 30 },
+});
+
+// 0. This port only serves data; send browsers to the website on port 8080.
+app.get("/", async (request, reply) => {
+  const host = request.hostname.split(":")[0] || "localhost";
+  return reply.redirect(`http://${host}:8080/`);
 });
 
 // 1. Health Check
@@ -927,6 +944,206 @@ app.delete("/annotations/:id", async (request, reply) => {
     reply.status(500);
     return { error: err.message };
   }
+});
+
+// ------------------------------------------------------------------
+// Driver photo reports
+// ------------------------------------------------------------------
+// Files live on disk under api/uploads/field-photos/<uuid>.<ext>; the
+// database keeps metadata and the file names. client_ref is generated on the
+// phone, so a report retried after a dropped connection is stored once.
+const PHOTO_DIR = path.resolve(__dirname, "..", "uploads", "field-photos");
+mkdirSync(PHOTO_DIR, { recursive: true });
+const PHOTO_NAME = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp)$/;
+const PHOTO_TYPES: Record<string, string> = { jpg: "image/jpeg", png: "image/png", webp: "image/webp" };
+
+// Trust the bytes, not the client's Content-Type.
+function sniffImage(buf: Buffer): "jpg" | "png" | "webp" | null {
+  if (buf.length > 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return "jpg";
+  if (buf.length > 8 && buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return "png";
+  if (buf.length > 12 && buf.toString("ascii", 0, 4) === "RIFF" && buf.toString("ascii", 8, 12) === "WEBP") return "webp";
+  return null;
+}
+
+const optionalNumber = (schema: z.ZodNumber) =>
+  z.preprocess((v) => (v === "" || v === undefined || v === null ? undefined : Number(v)), schema.optional());
+
+const PhotoReportSchema = z
+  .object({
+    client_ref: z.string().uuid(),
+    reporter_name: z.string().trim().min(1).max(60),
+    vehicle_id: z.string().trim().max(20).default(""),
+    incident_type: z.enum(["landslide", "flooding", "washout", "tree_fall", "accident", "other"]),
+    passability: z.enum(["open", "slow", "one_lane", "blocked"]),
+    vehicles_stuck: z.enum(["none", "1_5", "6_20", "20_plus"]).default("none"),
+    note: z.string().trim().max(500).default(""),
+    landmark: z.string().trim().max(120).default(""),
+    lat: optionalNumber(z.number().min(0).max(40)),
+    lon: optionalNumber(z.number().min(60).max(110)),
+    accuracy_m: optionalNumber(z.number().min(0).max(100000)),
+    captured_at: z.string().datetime({ offset: true }).optional(),
+  })
+  .refine((d) => (d.lat !== undefined && d.lon !== undefined) || d.landmark.length >= 3, {
+    message: "Send GPS coordinates or describe the location (landmark / km stone)",
+    path: ["landmark"],
+  });
+
+class ClientError extends Error {
+  constructor(public status: number, message: string) {
+    super(message);
+  }
+}
+
+app.post("/field-photos", async (request, reply) => {
+  if (!request.isMultipart()) {
+    reply.status(415);
+    return { error: "Send the report as multipart/form-data" };
+  }
+  const fields: Record<string, string> = {};
+  const saved: { file: string; bytes: number }[] = [];
+  const removeSaved = () => Promise.all(saved.map((f) => fsp.unlink(path.join(PHOTO_DIR, f.file)).catch(() => {})));
+  try {
+    for await (const part of request.parts()) {
+      if (part.type === "file") {
+        if (part.fieldname !== "photos") {
+          await part.toBuffer();
+          continue;
+        }
+        const buf = await part.toBuffer();
+        const kind = sniffImage(buf);
+        if (!kind) throw new ClientError(415, "Only JPEG, PNG or WebP photos are accepted");
+        const file = `${randomUUID()}.${kind}`;
+        await fsp.writeFile(path.join(PHOTO_DIR, file), buf);
+        saved.push({ file, bytes: buf.length });
+      } else {
+        fields[part.fieldname] = String(part.value ?? "");
+      }
+    }
+    if (!saved.length) throw new ClientError(400, "Attach at least one photo");
+    const parsed = PhotoReportSchema.safeParse(fields);
+    if (!parsed.success) {
+      throw new ClientError(400, parsed.error.issues.map((i) => `${i.path.join(".") || "report"}: ${i.message}`).join("; "));
+    }
+    const r = parsed.data;
+    const hasPoint = r.lat !== undefined && r.lon !== undefined;
+    const ins = await pool.query(
+      `INSERT INTO field_photo_reports
+         (client_ref, reporter_name, vehicle_id, incident_type, passability, vehicles_stuck, note, landmark,
+          geom, accuracy_m, captured_at, photos)
+       VALUES ($1, $2, $3, $4, $5, $13, $6, $7,
+               CASE WHEN $8::float8 IS NULL THEN NULL ELSE ST_SetSRID(ST_MakePoint($9::float8, $8::float8), 4326) END,
+               $10, $11, $12::jsonb)
+       ON CONFLICT (client_ref) DO NOTHING
+       RETURNING id, received_at;`,
+      [r.client_ref, r.reporter_name, r.vehicle_id, r.incident_type, r.passability, r.note, r.landmark,
+       hasPoint ? r.lat : null, hasPoint ? r.lon : null, r.accuracy_m ?? null, r.captured_at ?? null, JSON.stringify(saved),
+       r.vehicles_stuck]
+    );
+    if (!ins.rows.length) {
+      // Retry of a report we already have: keep the first copy.
+      await removeSaved();
+      const prev = await pool.query("SELECT id, received_at FROM field_photo_reports WHERE client_ref = $1", [r.client_ref]);
+      return { id: prev.rows[0].id, ref: `PHOTO-${String(prev.rows[0].id).padStart(5, "0")}`, received_at: prev.rows[0].received_at, duplicate: true };
+    }
+    const id = ins.rows[0].id;
+    const where = hasPoint ? `${r.lat!.toFixed(5)}, ${r.lon!.toFixed(5)} (±${Math.round(r.accuracy_m ?? 0)} m)` : `"${r.landmark}"`;
+    await pool.query(
+      "INSERT INTO audit_logs (action, confidence, reasoning, data_provenance) VALUES ($1, $2, $3, 'REAL');",
+      [
+        `FIELD_PHOTO_${r.incident_type.toUpperCase()}`,
+        1.0,
+        `${r.reporter_name}${r.vehicle_id ? ` (${r.vehicle_id})` : ""} reported ${r.incident_type.replace("_", " ")}, road ${r.passability.replace("_", " ")}, vehicles stuck: ${r.vehicles_stuck.replace("_", "-").replace("-plus", "+")}, ${saved.length} photo(s) at ${where}. Unverified.`,
+      ]
+    );
+    reply.status(201);
+    return { id, ref: `PHOTO-${String(id).padStart(5, "0")}`, received_at: ins.rows[0].received_at, photos: saved.length };
+  } catch (err: any) {
+    await removeSaved();
+    if (err instanceof ClientError) {
+      reply.status(err.status);
+      return { error: err.message };
+    }
+    if (err.code === "FST_REQ_FILE_TOO_LARGE") {
+      reply.status(413);
+      return { error: "A photo is larger than 6 MB" };
+    }
+    if (err.code === "FST_FILES_LIMIT" || err.code === "FST_PARTS_LIMIT") {
+      reply.status(413);
+      return { error: `At most ${MAX_PHOTOS} photos per report` };
+    }
+    if (err.code === "42P01") {
+      reply.status(503);
+      return { error: "Photo reports are not set up on this server yet (run db/migrate.py)" };
+    }
+    request.log.error(err);
+    reply.status(500);
+    return { error: "Could not save the report" };
+  }
+});
+
+app.get("/field-photos", async (request, reply) => {
+  const { days } = request.query as { days?: string };
+  let lookback = parseInt(days ?? "7", 10);
+  if (!Number.isInteger(lookback) || lookback < 1) lookback = 7;
+  if (lookback > 90) lookback = 90;
+  try {
+    const res = await pool.query(
+      `SELECT id, reporter_name, vehicle_id, incident_type, passability, vehicles_stuck, note, landmark,
+              ST_AsGeoJSON(geom) AS geojson, accuracy_m, captured_at, received_at, photos, status, data_provenance
+       FROM field_photo_reports
+       WHERE received_at >= NOW() - make_interval(days => $1)
+       ORDER BY received_at DESC LIMIT 500;`,
+      [lookback]
+    );
+    return {
+      type: "FeatureCollection",
+      features: res.rows.map((r) => ({
+        type: "Feature",
+        geometry: r.geojson ? JSON.parse(r.geojson) : null,
+        properties: {
+          id: r.id,
+          ref: `PHOTO-${String(r.id).padStart(5, "0")}`,
+          reporter_name: r.reporter_name,
+          vehicle_id: r.vehicle_id,
+          incident_type: r.incident_type,
+          passability: r.passability,
+          vehicles_stuck: r.vehicles_stuck,
+          note: r.note,
+          landmark: r.landmark,
+          accuracy_m: r.accuracy_m,
+          captured_at: r.captured_at,
+          received_at: r.received_at,
+          photo_urls: (r.photos || []).map((p: any) => `/field-photos/files/${p.file}`),
+          status: r.status,
+          data_provenance: r.data_provenance,
+        },
+      })),
+    };
+  } catch (err: any) {
+    if (err.code === "42P01") return { type: "FeatureCollection", features: [] };
+    reply.status(500);
+    return { error: err.message };
+  }
+});
+
+app.get("/field-photos/files/:name", async (request, reply) => {
+  const { name } = request.params as { name: string };
+  if (!PHOTO_NAME.test(name)) {
+    reply.status(404);
+    return { error: "Not found" };
+  }
+  const file = path.join(PHOTO_DIR, name);
+  try {
+    await fsp.access(file);
+  } catch {
+    reply.status(404);
+    return { error: "Not found" };
+  }
+  reply.header("Content-Type", PHOTO_TYPES[name.split(".").pop() as string]);
+  // Names are random UUIDs and files never change.
+  reply.header("Cache-Control", "public, max-age=604800, immutable");
+  reply.header("X-Content-Type-Options", "nosniff");
+  return reply.send(createReadStream(file));
 });
 
 const start = async () => {

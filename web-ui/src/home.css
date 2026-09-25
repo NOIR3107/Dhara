@@ -1,0 +1,158 @@
+/* Islands on web/home.html. Uses the page's own tokens (--ink, --card, ...). */
+
+/* ---------- site menu (StaggeredMenu) ---------- */
+.dhara-menu-host { width: 100%; height: 100%; }
+.dhara-menu.staggered-menu-wrapper { z-index: 45; }
+.dhara-menu .sm-logo { display: none; }
+.dhara-menu .staggered-menu-header {
+  top: var(--slot-top, 32px);
+  left: var(--slot-left, auto);
+  width: var(--slot-w, 120px);
+  height: var(--slot-h, 40px);
+  padding: 0;
+  justify-content: flex-end;
+}
+.dhara-menu .sm-toggle {
+  height: 100%;
+  padding: 0 16px;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  font: 700 13px var(--font);
+}
+.dhara-menu .sm-toggle:focus-visible { outline: 2px solid var(--crimson); outline-offset: 3px; }
+.dhara-menu .staggered-menu-panel {
+  background: var(--card);
+  border-left: 1px solid var(--line);
+  padding: 7.5em 2.2em 2em;
+}
+.dhara-menu .sm-panel-item {
+  color: var(--ink);
+  font-family: var(--font);
+  font-weight: 800;
+  font-size: clamp(2rem, 4.4vw, 2.9rem);
+  letter-spacing: -0.04em;
+}
+.dhara-menu .sm-panel-list[data-numbering] .sm-panel-item::after {
+  font-family: var(--mono);
+  font-size: 13px;
+  right: 1.2em;
+}
+.dhara-menu .sm-panel-item:focus-visible { outline: 2px solid var(--crimson); outline-offset: 4px; }
+
+/* ---------- sign-in ---------- */
+.signin-current {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: var(--green-bg);
+  color: var(--green-ink);
+  font-size: 14px;
+}
+.signin-current b { color: var(--ink); }
+.signin-current-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.signin-identity {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr auto;
+  gap: 14px;
+  align-items: end;
+  margin-top: 28px;
+  padding: 18px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.signin-identity label,
+.signin-lang-label {
+  display: block;
+  font: 700 10.5px var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.signin-identity .optional { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--taupe); }
+.signin-identity input {
+  display: block;
+  width: 100%;
+  margin-top: 7px;
+  height: 44px;
+  padding: 0 13px;
+  font: 15px var(--font);
+  color: var(--ink);
+  background: var(--canvas);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  outline: none;
+}
+.signin-identity input:focus { border-color: var(--espresso); box-shadow: 0 0 0 3px var(--focus-shadow); }
+.signin-lang { display: grid; gap: 7px; }
+.signin-error { margin-top: 10px; font-size: 13px; color: var(--red); }
+
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 22px;
+}
+@media (max-width: 1000px) { .role-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 760px) {
+  .role-grid { grid-template-columns: 1fr; }
+  .signin-identity { grid-template-columns: 1fr; }
+}
+
+.role-card { height: 100%; }
+.role-card .border-glow-inner { height: 100%; }
+.role-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+  padding: 22px;
+  color: var(--ink);
+}
+.role-card-head { display: flex; gap: 12px; align-items: flex-start; }
+.role-icon {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--sand-soft);
+  color: var(--espresso);
+}
+.role-card h3 { font: 800 16.5px var(--font); letter-spacing: -0.01em; }
+.role-card small { display: block; margin-top: 3px; font: 11px var(--mono); color: var(--taupe); }
+.role-card ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.role-card li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.role-card li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.62em;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--crimson);
+  opacity: 0.75;
+}
+.role-card .btn { margin-top: auto; }
+
+/* ---------- forecast-day picker in the hero map card ---------- */
+.day-picker-row { margin: 10px -4px 0; overflow-x: auto; scrollbar-width: none; }
+.day-picker-row::-webkit-scrollbar { display: none; }
+.day-picker-row .jelly-radio { font-family: var(--font); }

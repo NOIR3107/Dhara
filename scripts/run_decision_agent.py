@@ -83,7 +83,9 @@ def run_decision_agent():
             tier_label = "ESCALATED"
             action_type = "escalate"
 
-        cargo = "12t Ration Packs" if p_close > 0.3 else "5t Emergency Medical Kits"
+        # The quantity is prefixed below, so the cargo name must not repeat it
+        # (it used to read "Pre-positioned 12t 12t ration packs").
+        cargo = "Ration Packs" if p_close > 0.3 else "Emergency Medical Kits"
         qty = 12 if p_close > 0.3 else 5
         egress_hours = round(float(delta_min) / 60.0, 1)
 

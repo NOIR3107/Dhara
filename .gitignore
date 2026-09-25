@@ -25,3 +25,6 @@ Thumbs.db
 
 # Cached responses from external feeds (ingest/http_util.py)
 data/cache/
+
+# Driver photo uploads (api/src/server.ts)
+api/uploads/

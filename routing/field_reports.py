@@ -32,6 +32,7 @@ from typing import Dict, List, Optional, Set
 
 import config
 import reasoning as rsn
+import field_report_nlp as nlp
 
 
 # ---------------------------------------------------------------------------
@@ -44,13 +45,19 @@ class FieldReport:
     A single field report from an officer.
 
     Attributes:
-        report_id  : Auto-generated UUID.
-        officer_id : Officer identifier (from Bhoomika's app).
-        edge_id    : osmid of the road segment being reported on.
-        status     : "blocked" | "clear"
-        timestamp  : When the report was submitted (UTC datetime).
-        district   : The district_id of the reported segment.
-        notes      : Optional free-text notes from the officer.
+        report_id    : Auto-generated UUID.
+        officer_id   : Officer identifier (from Bhoomika's app).
+        edge_id      : osmid of the road segment being reported on.
+        status       : "blocked" | "clear"
+        timestamp    : When the report was submitted (UTC datetime).
+        district     : The district_id of the reported segment.
+        notes        : Optional free-text notes from the officer.
+        hazard_type  : Derived from `notes` by field_report_nlp.py —
+                       landslide | washout | tree_fall | flooding |
+                       subsidence | none | unknown. Not settable directly.
+        severity     : Derived from `notes` — impassable | major | minor |
+                       none | unknown. Drives the severity-aware boost in
+                       get_adjusted_probability() below. Not settable directly.
     """
     officer_id: str
     edge_id:    str
@@ -59,10 +66,15 @@ class FieldReport:
     timestamp:  datetime = field(default_factory=lambda: datetime.now(tz=timezone.utc))
     notes:      Optional[str] = None
     report_id:  str = field(default_factory=lambda: str(uuid.uuid4()))
+    hazard_type: str = field(init=False, default="none")
+    severity:    str = field(init=False, default="none")
 
     def __post_init__(self):
         if self.status not in ("blocked", "clear"):
             raise ValueError(f"FieldReport status must be 'blocked' or 'clear', got: '{self.status}'")
+        classification = nlp.classify_note(self.notes)
+        self.hazard_type = classification["hazard_type"]
+        self.severity = classification["severity"]
 
 
 @dataclass
@@ -159,12 +171,16 @@ class ReportStore:
             data_sources=data_sources,
             is_conflict=is_conflict,
             conflict_detail=conflict.detail if conflict else None,
+            hazard_type=report.hazard_type,
+            severity=report.severity,
         )
 
         return {
             "report_id":            report.report_id,
             "edge_id":              edge_id,
             "status":               report.status,
+            "hazard_type":          report.hazard_type,
+            "severity":             report.severity,
             "adjusted_probability": round(adjusted_prob, 4),
             "is_conflict":          is_conflict,
             "flagged_for_review":   edge_id in self._flagged,
@@ -243,6 +259,11 @@ class ReportStore:
 
         Rules:
             - Most recent report wins for direction (blocked→boost, clear→reduce).
+            - A "blocked" boost is severity-aware: field_report_nlp.py classifies
+              the officer's free-text notes into a hazard severity, and the boost
+              is looked up from config.FIELD_REPORT_SEVERITY_BOOST (e.g. an
+              "impassable" landslide boosts more than a "minor" one). Reports
+              with no notes fall back to the flat FIELD_REPORT_BLOCKED_BOOST.
             - If a conflict exists for this edge, apply confidence penalty as an
               additional uncertainty factor (average toward 0.5).
             - Result is clamped to [0.0, 1.0].
@@ -258,7 +279,10 @@ class ReportStore:
         latest = max(reports, key=lambda r: r.timestamp)
 
         if latest.status == "blocked":
-            adjusted = min(base_prob + config.FIELD_REPORT_BLOCKED_BOOST, 1.0)
+            boost = config.FIELD_REPORT_SEVERITY_BOOST.get(
+                latest.severity, config.FIELD_REPORT_BLOCKED_BOOST
+            )
+            adjusted = min(base_prob + boost, 1.0)
         else:  # "clear"
             adjusted = max(base_prob - config.FIELD_REPORT_CLEAR_REDUCTION, 0.0)
 

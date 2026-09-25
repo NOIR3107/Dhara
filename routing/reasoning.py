@@ -8,20 +8,29 @@ explanation string. Consumed by:
     - alternate_route.py (cut-off / reroute reasoning)
     - field_reports.py   (conflict flag reasoning)
 
-THIS IS NOT AN LLM.
-Template-based string generation only. No model calls, no inference.
-This mirrors the project's core principle: if it's an explanation of a
-rule-based decision, it's a template — not AI.
-
-The output string is the SINGLE source of truth used by:
+The build_*_reasoning() functions below are template-based string
+generation only. No model calls, no inference. This mirrors the project's
+core principle: if it's an explanation of a rule-based decision, it's a
+template — not AI. Their output is the SINGLE source of truth used by:
     - Akshita's audit log
     - Bhoomika's tier-status display
-Never generate separate text in each module — call this instead.
+Never generate separate text in each module — call these instead. This
+part of the module's behavior is unchanged and is never allowed to depend
+on an LLM being available.
 
 Target format:
     "Dispatched via Route B — NH-150 closure probability 0.82,
      source: IMD forecast + Bhuvan susceptibility + 2 field reports,
      auto-dispatch tier (>85% confidence)."
+
+explain_for_officer() at the bottom of this file is a SEPARATE, optional
+addition: given a reasoning string that's already been built above, it asks
+a local LLM (llm_backend.py, Ollama, fully offline once the model is
+pulled) to rephrase it in plainer language for a human. It is opt-in, on-
+demand only — never wired into automation.py's or field_reports.py's hot
+paths — and always falls back to the original deterministic string
+unchanged if the local model is unavailable or slow. It never touches the
+audit-log string.
 """
 
 from __future__ import annotations
@@ -30,6 +39,7 @@ from datetime import datetime
 from typing import List, Optional
 
 import config
+import llm_backend
 
 
 # ---------------------------------------------------------------------------
@@ -273,10 +283,17 @@ def build_field_report_reasoning(
     data_sources: List[str],
     is_conflict: bool = False,
     conflict_detail: Optional[str] = None,
+    hazard_type: Optional[str] = None,
+    severity: Optional[str] = None,
 ) -> str:
     """
     Build the reasoning string for a field report ingestion event.
     Used by field_reports.py.
+
+    hazard_type/severity are the (optional) output of field_report_nlp.py's
+    offline classification of the officer's free-text notes. When present
+    and informative, they're appended so the audit trail shows WHY a
+    "blocked" report got the boost it did, not just that it was "blocked".
     """
     source_str = _join_sources(data_sources)
     base = (
@@ -285,6 +302,8 @@ def build_field_report_reasoning(
         f"Adjusted closure probability: {adjusted_probability:.2f}. "
         f"Source: {source_str}."
     )
+    if hazard_type and hazard_type not in ("none", "unknown"):
+        base += f" Notes classified as: {hazard_type}, severity {severity} (offline NLP)."
     if is_conflict:
         base += (
             f" CONFLICT DETECTED: {conflict_detail or 'Conflicting reports from different officers within the conflict window'}. "
@@ -303,3 +322,39 @@ def _join_sources(sources: List[str]) -> str:
     if not sources:
         return "unknown source"
     return " + ".join(str(s) for s in sources)
+
+
+# ---------------------------------------------------------------------------
+# Optional LLM-enriched briefing (see module docstring for the guarantees)
+# ---------------------------------------------------------------------------
+
+def explain_for_officer(reasoning_text: str) -> dict:
+    """
+    Given a reasoning string already produced by one of the build_*_reasoning()
+    functions above, return both that original string and an OPTIONAL
+    plain-language rephrase from a local LLM.
+
+    Call this on-demand for a single decision a human is looking at (e.g. a
+    "explain this in plain language" UI action) — NOT in a loop over many
+    decisions. A local CPU-only model can take several seconds per call
+    (see config.LLM_TIMEOUT_SECONDS), so this must never sit on the
+    automation.py / field_reports.py hot path.
+
+    Returns:
+        {
+          "audit_text": reasoning_text,   # unchanged — store THIS in the audit log
+          "briefing":   str | None,       # LLM rephrase, or None if unavailable
+          "llm_used":   bool,             # whether the briefing came from the LLM
+        }
+
+    If the local Ollama server isn't running (offline deployment, no model
+    pulled yet, or it simply timed out), "briefing" is None and "llm_used"
+    is False — callers should display audit_text in that case. It is
+    already human-readable; the briefing is a nicety, not a requirement.
+    """
+    briefing = llm_backend.generate_briefing(reasoning_text)
+    return {
+        "audit_text": reasoning_text,
+        "briefing": briefing,
+        "llm_used": briefing is not None,
+    }

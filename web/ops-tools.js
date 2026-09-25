@@ -5,6 +5,7 @@
  *     zones (areas), stored in PostGIS via /annotations and written to the
  *     audit trail. Everyone on the command map sees them (60 s refresh).
  *   - Measure: distance along a clicked line (not saved).
+ *   - Driver photo reports (from /report) as a camera layer with thumbnails.
  *   - Situation snapshot: one GeoJSON file with the selected forecast day's
  *     road risks, live hazards and officer notes, for after-action review.
  *
@@ -89,7 +90,58 @@
     return layer.bindPopup(popup);
   }
 
+  // ------------------------------------------------------------------
+  // Driver photo reports (submitted from /report), last 7 days
+  // ------------------------------------------------------------------
+  const INCIDENT_LABELS = {
+    landslide: "Landslide / debris", flooding: "Water over road", washout: "Road washed out",
+    tree_fall: "Fallen tree", accident: "Accident / stuck vehicle", other: "Other",
+  };
+  const PASS_LABELS = { blocked: "Blocked", one_lane: "One lane only", slow: "Passable, slow", open: "Open" };
+  const STUCK_LABELS = { none: "none", "1_5": "1–5", "6_20": "6–20", "20_plus": "20+" };
+
+  function photoLayer(f) {
+    const p = f.properties;
+    const [lon, lat] = f.geometry.coordinates;
+    const when = new Date(p.captured_at || p.received_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+    const thumbs = (p.photo_urls || []).map((u) =>
+      `<a href="${API_BASE}${escapeHtml(u)}" target="_blank" rel="noopener"><img src="${API_BASE}${escapeHtml(u)}" alt="Field photo" loading="lazy"></a>`).join("");
+    const popup =
+      `<strong>📷 ${escapeHtml(INCIDENT_LABELS[p.incident_type] || p.incident_type)}</strong> ` +
+      `<span class="intel-prov">UNVERIFIED · ${escapeHtml(p.ref)}</span><br>` +
+      `Road: <b>${escapeHtml(PASS_LABELS[p.passability] || p.passability)}</b> · vehicles stuck: ${escapeHtml(STUCK_LABELS[p.vehicles_stuck] || "?")}<br>` +
+      `<div class="ops-photo-thumbs">${thumbs}</div>` +
+      (p.note ? `<div>${escapeHtml(p.note)}</div>` : "") +
+      (p.landmark ? `<div class="intel-muted">Near: ${escapeHtml(p.landmark)}</div>` : "") +
+      `<div class="intel-muted">${escapeHtml(p.reporter_name)}${p.vehicle_id ? " · " + escapeHtml(p.vehicle_id) : ""} · ${when}` +
+      `${p.accuracy_m != null ? " · GPS ±" + Math.round(p.accuracy_m) + " m" : ""}</div>`;
+    return L.marker([lat, lon], {
+      icon: L.divIcon({ className: `ops-pin ops-photo ${p.passability === "blocked" ? "blocked" : ""}`, html: "<span>📷</span>", iconSize: [30, 30], iconAnchor: [15, 15] }),
+      title: `${INCIDENT_LABELS[p.incident_type] || p.incident_type} (${p.ref})`,
+      keyboard: true,
+    }).bindPopup(popup, { maxWidth: 280 });
+  }
+
+  async function refreshPhotos() {
+    try {
+      const res = await fetch(`${API_BASE}/field-photos?days=7`);
+      if (!res.ok) throw new Error(`API ${res.status}`);
+      const data = await res.json();
+      state.photoLayer.clearLayers();
+      const located = (data.features || []).filter((f) => f.geometry && f.geometry.type === "Point");
+      located.forEach((f) => state.photoLayer.addLayer(photoLayer(f)));
+      const count = state.panel && state.panel.querySelector(".ops-photo-count");
+      if (count) {
+        const unplaced = (data.features || []).length - located.length;
+        count.textContent = `${located.length} driver photo report(s) on the map (7 days)` + (unplaced ? `, ${unplaced} without GPS` : "");
+      }
+    } catch (err) {
+      console.warn("Field photos fetch failed:", err);
+    }
+  }
+
   async function refresh() {
+    refreshPhotos();
     try {
       const res = await fetch(`${API_BASE}/annotations`);
       if (!res.ok) throw new Error(`API ${res.status}`);
@@ -143,7 +195,7 @@
   function redrawPreview() {
     const d = state.draft;
     d.preview.clearLayers();
-    d.points.forEach((p) => d.preview.addLayer(L.circleMarker(p, { radius: 4, color: "#1F1E1D", weight: 2, fillColor: "#FFFFFF", fillOpacity: 1 })));
+    d.points.forEach((p) => d.preview.addLayer(L.circleMarker(p, { radius: 4, color: "#312622", weight: 2, fillColor: "#FFFFFF", fillOpacity: 1 })));
     if (d.points.length > 1) {
       const style = { color: d.mode === "measure" ? "#2563EB" : "#B91C1C", weight: 2, dashArray: "5 4" };
       d.preview.addLayer(d.geom === "Polygon" && d.points.length > 2 ? L.polygon(d.points, style) : L.polyline(d.points, style));
@@ -338,6 +390,7 @@
               <button type="submit">Save &amp; share</button>
             </form>
             <div class="intel-muted ops-count"></div>
+            <div class="intel-muted ops-photo-count"></div>
             <button type="button" class="intel-share ops-export">⬇ Export situation snapshot</button>
           </div>`;
         L.DomEvent.disableClickPropagation(el);
@@ -377,6 +430,7 @@
     if (!leafletMap || state.map) return;
     state.map = leafletMap;
     state.layer = L.layerGroup().addTo(leafletMap);
+    state.photoLayer = L.layerGroup().addTo(leafletMap);
     buildPanel();
 
     // Remove buttons live inside popups; delegate from the map container.
@@ -392,5 +446,12 @@
     state.timer = setInterval(refresh, REFRESH_MS);
   }
 
-  window.DharaOps = { attach, refresh };
+  // Open or close the notes panel (used by the Live Map toolbar). Goes
+  // through the panel's own toggle so "one panel open at a time" still holds.
+  function togglePanel() {
+    const toggle = state.panel && state.panel.querySelector(".intel-toggle");
+    if (toggle) toggle.click();
+  }
+
+  window.DharaOps = { attach, refresh, togglePanel };
 })();
