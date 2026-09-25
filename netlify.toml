@@ -1,0 +1,9 @@
+[build]
+  # No build command needed — static site served directly from web/
+  publish = "web"
+
+# SPA-style fallback: serve index.html for any unknown route
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
