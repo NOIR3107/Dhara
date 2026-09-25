@@ -4,7 +4,9 @@ import { Pool } from "pg";
 import { z } from "zod";
 
 const PORT = parseInt(process.env.PORT || "3001", 10);
-const DATABASE_URL = process.env.DATABASE_URL || "postgresql://ner:ner_dev_password@localhost:5433/dhara";
+// 127.0.0.1, not localhost: Node resolves localhost to ::1 first, and Docker
+// Desktop's IPv6 port forward to Postgres can hang (every query → ECONNRESET).
+const DATABASE_URL = process.env.DATABASE_URL || "postgresql://ner:ner_dev_password@127.0.0.1:5433/dhara";
 
 const pool = new Pool({
   connectionString: DATABASE_URL,
@@ -16,6 +18,7 @@ const app = Fastify({
 
 app.register(cors, {
   origin: "*",
+  methods: ["GET", "POST", "DELETE"],
 });
 
 // 1. Health Check
@@ -35,14 +38,24 @@ app.get("/health", async (request, reply) => {
 });
 
 // 2. Habitations (GeoJSON)
+// Accepts an optional ?day=0..6 query param selecting which day of the
+// 7-day VRI forecast horizon to render (0 = earliest forecast_date, the
+// same day the "Day 1"..."Day 7" chips on the command map step through).
+// Defaults to day 0 so existing callers are unaffected.
 app.get("/habitations", async (request, reply) => {
   try {
+    const { day } = request.query as { day?: string };
+    let dayOffset = parseInt(day ?? "0", 10);
+    if (!Number.isInteger(dayOffset) || dayOffset < 0) dayOffset = 0;
+    if (dayOffset > 6) dayOffset = 6;
+
     const query = `
       SELECT h.id, h.name, COALESCE(h.district_id, 'dist_tawang') AS district_id, h.population,
              ST_X(h.location::geometry) AS lon, ST_Y(h.location::geometry) AS lat,
              COALESCE(v.vri, 65.0) AS vri,
              COALESCE(v.reachability_prob, 0.65) AS reachability_prob,
              COALESCE(v.confidence, 0.85) AS confidence,
+             v.forecast_date,
              COALESCE(c.hours_until_cutoff, 48.0) AS hours_until_cutoff,
              COALESCE(c.status, 'no_cutoff_in_window') AS cutoff_status,
              COALESCE(e.travel_time_now_min, 25.0) AS travel_time_now_min,
@@ -50,12 +63,17 @@ app.get("/habitations", async (request, reply) => {
              COALESCE(e.delta_min, 120.0) AS egress_delta_min,
              h.data_provenance
       FROM habitations h
-      LEFT JOIN vri_forecasts v ON h.id = v.village_id AND v.forecast_date = (SELECT MIN(forecast_date) FROM vri_forecasts)
+      LEFT JOIN vri_forecasts v ON h.id = v.village_id
+        AND v.forecast_date = (
+          SELECT DISTINCT forecast_date FROM vri_forecasts
+          ORDER BY forecast_date ASC
+          OFFSET $1 LIMIT 1
+        )
       LEFT JOIN countdown_status c ON h.id = c.village_id
       LEFT JOIN egress_metrics e ON h.id = e.village_id
       ORDER BY v.vri ASC NULLS LAST;
     `;
-    const res = await pool.query(query);
+    const res = await pool.query(query, [dayOffset]);
 
     const features = res.rows.map((row) => ({
       type: "Feature",
@@ -170,18 +188,47 @@ app.get("/forecast", async (request, reply) => {
 // 5. Road Segments At-Risk (GeoJSON)
 app.get("/segments/at-risk", async (request, reply) => {
   try {
+    // ?day=N (0–6): Nth forecast day counting from today, like /habitations.
+    const { day } = request.query as { day?: string };
+    let dayOffset = parseInt(day ?? "0", 10);
+    if (!Number.isInteger(dayOffset) || dayOffset < 0) dayOffset = 0;
+    if (dayOffset > 6) dayOffset = 6;
+
     const query = `
+      WITH first_day AS (
+        SELECT COALESCE(MIN(forecast_for_date) FILTER (WHERE forecast_for_date >= CURRENT_DATE),
+                        MAX(forecast_for_date)) AS d
+        FROM disruption_forecasts
+      ),
+      target AS (
+        SELECT DISTINCT df.forecast_for_date AS d
+        FROM disruption_forecasts df, first_day
+        WHERE df.forecast_for_date >= first_day.d
+        ORDER BY 1 OFFSET $1 LIMIT 1
+      )
       SELECT r.segment_id, r.district_id, r.road_type, r.slope_deg, r.landslide_class, r.flood_class,
              ST_AsGeoJSON(r.geom) AS geojson,
              COALESCE(d.closure_probability, 0.15) AS closure_probability,
              COALESCE(d.predicted_closed, false) AS predicted_closed,
+             d.forecast_for_date::text AS forecast_for_date,
+             f.base_probability, f.multiplier AS hazard_multiplier, f.reasons AS hazard_reasons,
              r.data_provenance
       FROM road_segments r
-      LEFT JOIN disruption_forecasts d ON r.segment_id = d.segment_id 
-           AND d.forecast_for_date = (SELECT MIN(forecast_for_date) FROM disruption_forecasts)
+      -- disruption_forecasts is append-only: take the latest run for the target day.
+      LEFT JOIN LATERAL (
+        SELECT closure_probability, predicted_closed, forecast_for_date, created_at
+        FROM disruption_forecasts df
+        WHERE df.segment_id = r.segment_id
+          AND df.forecast_for_date = (SELECT d FROM target)
+        ORDER BY created_at DESC LIMIT 1
+      ) d ON true
+      -- Hazard flags are written in the same transaction as the forecast run.
+      LEFT JOIN segment_hazard_flags f
+        ON f.segment_id = r.segment_id AND f.forecast_for_date = d.forecast_for_date
+       AND f.created_at = d.created_at
       ORDER BY closure_probability DESC;
     `;
-    const res = await pool.query(query);
+    const res = await pool.query(query, [dayOffset]);
 
     const features = res.rows.map((row) => ({
       type: "Feature",
@@ -195,6 +242,10 @@ app.get("/segments/at-risk", async (request, reply) => {
         flood_class: row.flood_class,
         closure_probability: parseFloat(row.closure_probability),
         predicted_closed: row.predicted_closed,
+        forecast_for_date: row.forecast_for_date,
+        base_probability: row.base_probability != null ? parseFloat(row.base_probability) : null,
+        hazard_multiplier: row.hazard_multiplier != null ? parseFloat(row.hazard_multiplier) : null,
+        hazard_reasons: row.hazard_reasons || [],
         data_provenance: row.data_provenance,
       },
     }));
@@ -231,7 +282,7 @@ app.get("/dispatches", async (request, reply) => {
 app.get("/depots", async (request, reply) => {
   try {
     const res = await pool.query(`
-      SELECT id, name, location, COALESCE(stock_ration_packs, 120) as rice_tonnes, COALESCE(stock_med_kits, 2400) as medicines_units, data_provenance FROM depots;
+      SELECT id, name, ST_AsGeoJSON(location::geometry)::json AS location, COALESCE(stock_ration_packs, 120) as rice_tonnes, COALESCE(stock_med_kits, 2400) as medicines_units, data_provenance FROM depots;
     `);
     const depots = res.rows.map((d) => ({
       id: d.id,
@@ -622,6 +673,256 @@ app.get("/field-reports", async (request, reply) => {
       LIMIT 25;
     `);
     return res.rows;
+  } catch (err: any) {
+    reply.status(500);
+    return { error: err.message };
+  }
+});
+
+// Live hazard events (USGS quakes, GDACS cyclones/flood alerts, FIRMS fires)
+// ingested by ingest/ingest_hazards.py.
+app.get("/hazards", async (request, reply) => {
+  try {
+    const { days } = request.query as { days?: string };
+    let lookback = parseInt(days ?? "14", 10);
+    if (!Number.isInteger(lookback) || lookback < 1) lookback = 14;
+    if (lookback > 60) lookback = 60;
+    const res = await pool.query(
+      `SELECT source, event_type, external_id, title, magnitude, severity,
+              event_time, valid_until, ST_AsGeoJSON(geom) AS geojson, properties, data_provenance
+       FROM hazard_events
+       WHERE COALESCE(valid_until, event_time) >= NOW() - make_interval(days => $1)
+       ORDER BY event_time DESC;`,
+      [lookback]
+    );
+    return {
+      type: "FeatureCollection",
+      features: res.rows.map((r) => ({
+        type: "Feature",
+        geometry: JSON.parse(r.geojson),
+        properties: {
+          source: r.source,
+          event_type: r.event_type,
+          external_id: r.external_id,
+          title: r.title,
+          magnitude: r.magnitude,
+          severity: r.severity,
+          event_time: r.event_time,
+          valid_until: r.valid_until,
+          ...r.properties,
+          data_provenance: r.data_provenance,
+        },
+      })),
+    };
+  } catch (err: any) {
+    // Table is created by the hazard ingest; before its first run there is nothing to show.
+    if (err.code === "42P01") return { type: "FeatureCollection", features: [] };
+    reply.status(500);
+    return { error: err.message };
+  }
+});
+
+// Regional disaster headlines from GDELT (unverified; context only).
+// Cached server-side because GDELT allows roughly one request per 5 seconds.
+const NEWS_TTL_MS = 15 * 60 * 1000;
+let newsCache: { at: number; articles: any[] } | null = null;
+const NEWS_QUERY =
+  '(landslide OR flood OR "road blocked" OR "cut off" OR cyclone OR earthquake) ' +
+  "(Assam OR Arunachal OR Meghalaya OR Manipur OR Mizoram OR Nagaland OR Tripura OR Sikkim) " +
+  "sourcecountry:IN";
+
+app.get("/news", async (request, reply) => {
+  if (newsCache && Date.now() - newsCache.at < NEWS_TTL_MS) {
+    return { articles: newsCache.articles, cached: true, source: "GDELT", verified: false };
+  }
+  try {
+    const url =
+      "https://api.gdeltproject.org/api/v2/doc/doc?mode=artlist&format=json&sort=DateDesc" +
+      `&maxrecords=15&timespan=3d&query=${encodeURIComponent(NEWS_QUERY)}`;
+    const res = await fetch(url, { headers: { "User-Agent": "DHARA-SIH/1.0" }, signal: AbortSignal.timeout(8000) });
+    if (!res.ok) throw new Error(`GDELT ${res.status}`);
+    const text = await res.text();
+    // GDELT answers rate-limit and query errors with plain text, not JSON.
+    const data = text.trim().startsWith("{") ? JSON.parse(text) : { articles: [] };
+    const articles = (data.articles || []).map((a: any) => ({
+      title: a.title,
+      url: a.url,
+      domain: a.domain,
+      seen_at: a.seendate,
+    }));
+    newsCache = { at: Date.now(), articles };
+    return { articles, cached: false, source: "GDELT", verified: false };
+  } catch (err: any) {
+    if (newsCache) return { articles: newsCache.articles, cached: true, stale: true, source: "GDELT", verified: false };
+    reply.status(502);
+    return { error: `News feed unavailable: ${err.message}`, articles: [] };
+  }
+});
+
+// ------------------------------------------------------------------
+// Earth-observation satellites: orbital elements for overpass prediction
+// ------------------------------------------------------------------
+// The browser propagates the orbits (satellite.js) and decides whether a
+// habitation falls inside each sensor's imaging strip. CelesTrak asks users
+// not to fetch the same data more than once every 2 hours, and sends no CORS
+// headers, so the API proxies and caches it.
+//
+// Imaging geometry (cross-track ground distance from the satellite track, km),
+// derived from published incidence-angle ranges with spherical-Earth geometry:
+//   Sentinel-1 IW: incidence 29.1–46.0° at 693 km  → 345–617 km, side-looking
+//   NISAR:         incidence 33–47° at 747 km       → 425–678 km, side-looking
+//   Optical sensors image a strip centred on the track (swath / 2 either side).
+const SATELLITES: Record<string, { sensor: "radar" | "optical"; instrument: string; near_km: number; far_km: number }> = {
+  "SENTINEL-1A": { sensor: "radar", instrument: "C-band SAR (IW)", near_km: 345, far_km: 617 },
+  "SENTINEL-1C": { sensor: "radar", instrument: "C-band SAR (IW)", near_km: 345, far_km: 617 },
+  "NISAR": { sensor: "radar", instrument: "L-band SAR", near_km: 425, far_km: 678 },
+  "SENTINEL-2A": { sensor: "optical", instrument: "MSI 10 m", near_km: 0, far_km: 145 },
+  "SENTINEL-2B": { sensor: "optical", instrument: "MSI 10 m", near_km: 0, far_km: 145 },
+  "SENTINEL-2C": { sensor: "optical", instrument: "MSI 10 m", near_km: 0, far_km: 145 },
+  "LANDSAT 8": { sensor: "optical", instrument: "OLI 30 m", near_km: 0, far_km: 92 },
+  "LANDSAT 9": { sensor: "optical", instrument: "OLI 30 m", near_km: 0, far_km: 92 },
+  "RESOURCESAT-2": { sensor: "optical", instrument: "AWiFS 56 m", near_km: 0, far_km: 370 },
+  "RESOURCESAT-2A": { sensor: "optical", instrument: "AWiFS 56 m", near_km: 0, far_km: 370 },
+};
+const TLE_TTL_MS = 6 * 60 * 60 * 1000;
+let tleCache: { at: number; satellites: any[] } | null = null;
+
+async function fetchTleText(query: string): Promise<string> {
+  const res = await fetch(`https://celestrak.org/NORAD/elements/gp.php?${query}&FORMAT=tle`, {
+    headers: { "User-Agent": "DHARA-SIH/1.0" },
+    signal: AbortSignal.timeout(20000),
+  });
+  if (!res.ok) throw new Error(`CelesTrak ${res.status}`);
+  return res.text();
+}
+
+function parseTle(text: string) {
+  const lines = text.split(/\r?\n/).map((l) => l.trimEnd()).filter(Boolean);
+  const out: { name: string; tle1: string; tle2: string }[] = [];
+  for (let i = 0; i + 2 < lines.length; ) {
+    if (lines[i + 1].startsWith("1 ") && lines[i + 2].startsWith("2 ")) {
+      out.push({ name: lines[i].trim(), tle1: lines[i + 1], tle2: lines[i + 2] });
+      i += 3;
+    } else {
+      i += 1; // resynchronise on a malformed block
+    }
+  }
+  return out;
+}
+
+app.get("/satellites/tle", async (request, reply) => {
+  if (tleCache && Date.now() - tleCache.at < TLE_TTL_MS) {
+    return { satellites: tleCache.satellites, cached: true, source: "CelesTrak" };
+  }
+  try {
+    // Sentinel-1C and NISAR are not in CelesTrak's "resource" group yet.
+    const texts = await Promise.all([
+      fetchTleText("GROUP=resource"),
+      fetchTleText("NAME=SENTINEL-1C"),
+      fetchTleText("NAME=NISAR"),
+    ]);
+    const seen = new Set<string>();
+    const satellites = texts.flatMap(parseTle)
+      .filter((t) => SATELLITES[t.name] && !seen.has(t.name) && seen.add(t.name))
+      .map((t) => ({ ...t, ...SATELLITES[t.name], norad: parseInt(t.tle2.slice(2, 7), 10) }));
+    tleCache = { at: Date.now(), satellites };
+    return { satellites, cached: false, source: "CelesTrak" };
+  } catch (err: any) {
+    if (tleCache) return { satellites: tleCache.satellites, cached: true, stale: true, source: "CelesTrak" };
+    reply.status(502);
+    return { error: `Orbit data unavailable: ${err.message}`, satellites: [] };
+  }
+});
+
+// ------------------------------------------------------------------
+// Shared map annotations (closure zones, staging areas, helipads, notes)
+// ------------------------------------------------------------------
+const lonLat = z.tuple([z.number().min(60).max(110), z.number().min(0).max(40)]);
+const AnnotationSchema = z.object({
+  kind: z.enum(["closure_zone", "staging_area", "helipad", "note", "route_note"]),
+  label: z.string().trim().min(1).max(120),
+  author: z.string().trim().min(1).max(60),
+  geometry: z.discriminatedUnion("type", [
+    z.object({ type: z.literal("Point"), coordinates: lonLat }),
+    z.object({ type: z.literal("LineString"), coordinates: z.array(lonLat).min(2).max(500) }),
+    z.object({ type: z.literal("Polygon"), coordinates: z.array(z.array(lonLat).min(4).max(500)).length(1) }),
+  ]),
+});
+
+app.get("/annotations", async (request, reply) => {
+  try {
+    const res = await pool.query(
+      `SELECT id, kind, label, author, created_at, ST_AsGeoJSON(geom) AS geojson, data_provenance
+       FROM map_annotations WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT 1000;`
+    );
+    return {
+      type: "FeatureCollection",
+      features: res.rows.map((r) => ({
+        type: "Feature",
+        geometry: JSON.parse(r.geojson),
+        properties: { id: r.id, kind: r.kind, label: r.label, author: r.author, created_at: r.created_at, data_provenance: r.data_provenance },
+      })),
+    };
+  } catch (err: any) {
+    if (err.code === "42P01") return { type: "FeatureCollection", features: [] };
+    reply.status(500);
+    return { error: err.message };
+  }
+});
+
+app.post("/annotations", async (request, reply) => {
+  const parsed = AnnotationSchema.safeParse(request.body);
+  if (!parsed.success) {
+    reply.status(400);
+    return { error: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") };
+  }
+  const a = parsed.data;
+  try {
+    const res = await pool.query(
+      `INSERT INTO map_annotations (kind, label, author, geom)
+       SELECT $1, $2, $3, g FROM (SELECT ST_SetSRID(ST_GeomFromGeoJSON($4), 4326) AS g) x
+       WHERE ST_IsValid(g)
+       RETURNING id, created_at;`,
+      [a.kind, a.label, a.author, JSON.stringify(a.geometry)]
+    );
+    if (!res.rows.length) {
+      reply.status(400);
+      return { error: "Invalid geometry (self-intersecting area?)" };
+    }
+    await pool.query(
+      "INSERT INTO audit_logs (action, confidence, reasoning, data_provenance) VALUES ($1, $2, $3, 'REAL');",
+      ["OFFICER_ANNOTATION_CREATED", 1.0, `${a.author} added ${a.kind.replace(/_/g, " ")} #${res.rows[0].id}: "${a.label}"`]
+    );
+    reply.status(201);
+    return { id: res.rows[0].id, created_at: res.rows[0].created_at };
+  } catch (err: any) {
+    reply.status(500);
+    return { error: err.message };
+  }
+});
+
+app.delete("/annotations/:id", async (request, reply) => {
+  const id = parseInt((request.params as { id: string }).id, 10);
+  const { author } = (request.query as { author?: string }) || {};
+  if (!Number.isInteger(id)) {
+    reply.status(400);
+    return { error: "Invalid id" };
+  }
+  try {
+    // Soft delete keeps the record for after-action review.
+    const res = await pool.query(
+      "UPDATE map_annotations SET deleted_at = NOW(), deleted_by = $2 WHERE id = $1 AND deleted_at IS NULL RETURNING kind, label;",
+      [id, (author || "unknown").slice(0, 60)]
+    );
+    if (!res.rows.length) {
+      reply.status(404);
+      return { error: "Annotation not found" };
+    }
+    await pool.query(
+      "INSERT INTO audit_logs (action, confidence, reasoning, data_provenance) VALUES ($1, $2, $3, 'REAL');",
+      ["OFFICER_ANNOTATION_REMOVED", 1.0, `${author || "unknown"} removed ${res.rows[0].kind.replace(/_/g, " ")} #${id}: "${res.rows[0].label}"`]
+    );
+    return { status: "removed" };
   } catch (err: any) {
     reply.status(500);
     return { error: err.message };

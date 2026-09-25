@@ -16,6 +16,8 @@ from ingest_health_facilities import ingest_health_facilities
 from ingest_districts import ingest_districts
 from ingest_road_segments import ingest_road_segments
 from ingest_simulated import ingest_simulated
+from ingest_weather_forecasts import ingest_live_forecasts
+from ingest_hazards import ingest_hazards
 
 DB_CONFIG = {
     "host": "localhost",
@@ -54,6 +56,8 @@ def main():
     ingest_landslides()
     ingest_health_facilities()
     ingest_simulated()
+    ingest_live_forecasts()
+    ingest_hazards()
 
     print("\n=== FINAL DATABASE VERIFICATION ===", flush=True)
     summary = verify_database()

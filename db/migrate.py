@@ -2,8 +2,16 @@
 DHARA Schema & Migration Script for PostgreSQL 16 + PostGIS 3.4
 Target DB: postgresql://ner:ner_dev_password@localhost:5433/dhara
 """
+import os
+import sys
+
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "ingest"))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "model"))
+from ingest_hazards import SCHEMA as HAZARD_EVENTS_SCHEMA
+from hazard_adjustment import FLAGS_SCHEMA
 
 DB_CONFIG = {
     "host": "localhost",
@@ -185,7 +193,28 @@ TABLES_DDL = [
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         data_provenance VARCHAR(20) NOT NULL DEFAULT 'DERIVED'
     );
+    """,
+    # 16. Weather forecast antecedent / look-ahead rain (ingest_weather_forecasts.py)
+    "ALTER TABLE weather_forecasts ADD COLUMN IF NOT EXISTS rain_72h_mm FLOAT;",
+    "ALTER TABLE weather_forecasts ADD COLUMN IF NOT EXISTS rain_next_72h_mm FLOAT;",
+    # 17. Live hazard events (ingest_hazards.py) and 18. hazard-driven forecast adjustments (hazard_adjustment.py)
+    HAZARD_EVENTS_SCHEMA,
+    FLAGS_SCHEMA,
+    # 19. Officer map annotations (shared; soft-deleted for after-action review)
     """
+    CREATE TABLE IF NOT EXISTS map_annotations (
+        id SERIAL PRIMARY KEY,
+        kind VARCHAR(30) NOT NULL,
+        label VARCHAR(120) NOT NULL,
+        author VARCHAR(60) NOT NULL,
+        geom GEOMETRY(Geometry, 4326) NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        deleted_at TIMESTAMPTZ,
+        deleted_by VARCHAR(60),
+        data_provenance VARCHAR(20) NOT NULL DEFAULT 'REAL'
+    );
+    """,
+    "CREATE INDEX IF NOT EXISTS map_annotations_geom_idx ON map_annotations USING GIST (geom);",
 ]
 
 def apply_schema():

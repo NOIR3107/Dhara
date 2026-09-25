@@ -18,6 +18,7 @@ Runs all stages in order and writes outputs to `outputs/`.
 | `countdown.py` | Converts 7-day VRI trajectory into `hours_until_cutoff`. |
 | `egress.py` | Travel time to nearest health facility, now vs. after predicted closure. |
 | `prepositioning.py` | Dispatch plan: commodity, quantity, depot, destination, latest departure time. |
+| `hazard_adjustment.py` | Post-model adjustment from live hazards (`hazard_events`: USGS quakes, GDACS cyclone wind buffers, FIRMS fires). Documented odds multipliers, capped at ×5, with every change and its reason written to `segment_hazard_flags`. Heuristic rules, not learned: the training data has no hazard columns. |
 | `backtest.py` | Replays one real closure onset from the held-out test year and reports how many days early it would have been flagged. |
 | `run_pipeline.py` | Runs all of the above in order. |
 

@@ -37,6 +37,7 @@ import vri
 import countdown
 import egress
 import automation
+import hazard_adjustment
 
 DB_CONFIG = {
     "host": "localhost",
@@ -122,6 +123,17 @@ def run_live_pipeline():
     )
     
     proba_df = closure_prediction.predict_closure_probability(future_feature_rows)
+
+    # Step 1b: Live hazard adjustment (quakes, cyclone wind buffers, fires) — see model/hazard_adjustment.py
+    hazard_conn = psycopg2.connect(**DB_CONFIG)
+    hazard_dates = [pd.Timestamp(d) for d in sorted(forecasts_df["date"].unique())]
+    adjustments = hazard_adjustment.compute_adjustments(hazard_conn, hazard_dates)
+    hazard_conn.close()
+    proba_df = hazard_adjustment.apply_adjustments(proba_df, adjustments)
+    n_flagged = int((proba_df["hazard_multiplier"] > 1.0).sum())
+    print(f"  Hazard adjustment: {n_flagged} segment-days raised by live hazards", flush=True)
+    for r in proba_df[proba_df["hazard_multiplier"] > 1.0].sort_values("hazard_multiplier", ascending=False).head(3).itertuples():
+        print(f"    {r.segment_id} {r.date.date()}: {r.base_probability:.3f} → {r.closure_probability:.3f} | {'; '.join(r.hazard_reasons)}", flush=True)
     proba_lookup = dict(zip(zip(proba_df["segment_id"], proba_df["date"]), proba_df["closure_probability"]))
 
     # Step 2: VRI Calculation for current date horizon
@@ -191,6 +203,9 @@ def run_live_pipeline():
         INSERT INTO disruption_forecasts (segment_id, forecast_for_date, closure_probability, predicted_closed, data_provenance)
         VALUES %s;
     """, disruption_rows, page_size=5000)
+
+    # 1b. Audit trail of hazard-driven adjustments (append-only)
+    hazard_adjustment.write_flags(conn, proba_df)
 
     # 2. Write vri_forecasts
     cur.execute("TRUNCATE TABLE vri_forecasts RESTART IDENTITY;")

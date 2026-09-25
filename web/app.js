@@ -798,13 +798,17 @@ function handleRoute() {
     bcTitle.textContent = viewName.replace("-", " ").toUpperCase();
   }
 
-  // Invalidate Map size if overview
+  // Init / resize the Map when the Overview view becomes visible.
+  // Deferred one tick so the "hidden" class removal above has actually
+  // taken effect and the container reports real dimensions.
   if (viewName === "overview") {
-    if (!map) {
-      initMap();
-    } else {
-      setTimeout(() => map.invalidateSize(), 200);
-    }
+    setTimeout(() => {
+      if (!map) {
+        initMap();
+      } else {
+        map.invalidateSize();
+      }
+    }, 50);
   }
 
   window.scrollTo(0, 0);
@@ -1268,27 +1272,27 @@ function openEvidenceModal(dec) {
 
   content.innerHTML = `
     <div style="display:flex; flex-direction:column; gap:16px; padding:20px;">
-      <div style="background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); padding:16px; border-radius:8px;">
-        <h4 style="color:#93C5FD; margin-bottom:6px;">Target Habitation: ${dec.village_name} (${dec.district})</h4>
-        <p style="font-size:13px; color:#D1D5DB;">Calculated VRI Reachability Index: <strong>${dec.current_vri} / 100</strong> (Cutoff predicted in <strong>${dec.cutoff_hours} hours</strong>)</p>
+      <div style="background:rgba(37,99,235,0.06); border:1px solid rgba(37,99,235,0.25); padding:16px; border-radius:8px;">
+        <h4 style="color:var(--accent-blue); margin-bottom:6px;">Target Habitation: ${dec.village_name} (${dec.district})</h4>
+        <p style="font-size:13px; color:var(--text-secondary);">Calculated VRI Reachability Index: <strong style="color:var(--text-primary);">${dec.current_vri} / 100</strong> (Cutoff predicted in <strong style="color:var(--text-primary);">${dec.cutoff_hours} hours</strong>)</p>
       </div>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <div style="background:#151D2F; padding:14px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
-          <strong style="font-size:12px; color:#9CA3AF; display:block; margin-bottom:4px;">TERRAIN &amp; SLOPE PROFILE</strong>
-          <div style="font-size:14px; font-weight:700; color:#F3F4F6;">${dec.terrain_slope}</div>
-          <span style="font-size:12px; color:#F87171;">${dec.landslide_class}</span>
+        <div style="background:var(--bg-main); padding:14px; border-radius:8px; border:1px solid var(--border-color);">
+          <strong style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">TERRAIN &amp; SLOPE PROFILE</strong>
+          <div style="font-size:14px; font-weight:700; color:var(--text-primary);">${dec.terrain_slope}</div>
+          <span style="font-size:12px; color:var(--accent-red);">${dec.landslide_class}</span>
         </div>
-        <div style="background:#151D2F; padding:14px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
-          <strong style="font-size:12px; color:#9CA3AF; display:block; margin-bottom:4px;">EGRESS DELTA &amp; ACCESS DELAY</strong>
-          <div style="font-size:14px; font-weight:700; color:#F3F4F6;">Now: ${dec.travel_time_now} &rarr; Post-Closure: ${dec.travel_time_after}</div>
-          <span style="font-size:12px; color:#FBBF24;">Alternate: ${dec.alternate_route}</span>
+        <div style="background:var(--bg-main); padding:14px; border-radius:8px; border:1px solid var(--border-color);">
+          <strong style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">EGRESS DELTA &amp; ACCESS DELAY</strong>
+          <div style="font-size:14px; font-weight:700; color:var(--text-primary);">Now: ${dec.travel_time_now} &rarr; Post-Closure: ${dec.travel_time_after}</div>
+          <span style="font-size:12px; color:var(--accent-amber);">Alternate: ${dec.alternate_route}</span>
         </div>
       </div>
 
-      <div style="background:#151D2F; padding:16px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
-        <strong style="font-size:12px; color:#9CA3AF; display:block; margin-bottom:8px;">DHARA MODULE 7 AUDIT REASONING</strong>
-        <p style="font-size:13.5px; line-height:1.5; color:#E5E7EB;">"${dec.reasoning}"</p>
+      <div style="background:var(--bg-main); padding:16px; border-radius:8px; border:1px solid var(--border-color);">
+        <strong style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:8px;">DHARA MODULE 7 AUDIT REASONING</strong>
+        <p style="font-size:13.5px; line-height:1.5; color:var(--text-secondary);">"${dec.reasoning}"</p>
       </div>
     </div>
   `;
@@ -1302,23 +1306,23 @@ function openRouteModal(dec) {
 
   content.innerHTML = `
     <div style="display:flex; flex-direction:column; gap:16px; padding:20px;">
-      <div style="background:#151D2F; border:1px solid var(--border-color); padding:16px; border-radius:8px;">
-        <h4 style="color:#93C5FD; font-size:16px; margin-bottom:8px;">Primary Supply Corridor: ${dec.corridor_route}</h4>
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; font-size:12.5px;">
-          <div>Origin Depot: <strong>${dec.source_depot}</strong></div>
-          <div>Destination: <strong>${dec.village_name}</strong></div>
-          <div>Normal Transit: <strong>${dec.travel_time_now}</strong></div>
+      <div style="background:var(--bg-main); border:1px solid var(--border-color); padding:16px; border-radius:8px;">
+        <h4 style="color:var(--accent-blue); font-size:16px; margin-bottom:8px;">Primary Supply Corridor: ${dec.corridor_route}</h4>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; font-size:12.5px; color:var(--text-secondary);">
+          <div>Origin Depot: <strong style="color:var(--text-primary);">${dec.source_depot}</strong></div>
+          <div>Destination: <strong style="color:var(--text-primary);">${dec.village_name}</strong></div>
+          <div>Normal Transit: <strong style="color:var(--text-primary);">${dec.travel_time_now}</strong></div>
         </div>
       </div>
 
-      <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); padding:16px; border-radius:8px;">
-        <h4 style="color:#F87171; font-size:14px; margin-bottom:6px;">⚠️ Threatened Road Segments</h4>
-        <p style="font-size:13px; color:#E5E7EB; line-height:1.5;">Km 38 to Km 44 on ${dec.corridor_route} has an active 0.78 closure probability. Road geometry passes beneath saturated 28° shale slope with high debris vulnerability.</p>
+      <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.25); padding:16px; border-radius:8px;">
+        <h4 style="color:var(--accent-red); font-size:14px; margin-bottom:6px;">⚠️ Threatened Road Segments</h4>
+        <p style="font-size:13px; color:var(--text-secondary); line-height:1.5;">Km 38 to Km 44 on ${dec.corridor_route} has an active 0.78 closure probability. Road geometry passes beneath saturated 28° shale slope with high debris vulnerability.</p>
       </div>
 
-      <div style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); padding:16px; border-radius:8px;">
-        <h4 style="color:#34D399; font-size:14px; margin-bottom:6px;">🛣️ Alternate Egress Corridor</h4>
-        <p style="font-size:13px; color:#E5E7EB; line-height:1.5;">${dec.alternate_route} — Travel time delay estimated at ${dec.travel_time_after}. High-clearance 4x4 or foot transport recommended if primary corridor severs.</p>
+      <div style="background:rgba(16,185,129,0.07); border:1px solid rgba(16,185,129,0.3); padding:16px; border-radius:8px;">
+        <h4 style="color:var(--accent-green); font-size:14px; margin-bottom:6px;">🛣️ Alternate Egress Corridor</h4>
+        <p style="font-size:13px; color:var(--text-secondary); line-height:1.5;">${dec.alternate_route} — Travel time delay estimated at ${dec.travel_time_after}. High-clearance 4x4 or foot transport recommended if primary corridor severs.</p>
       </div>
     </div>
   `;
@@ -1332,36 +1336,36 @@ function openAutomationModal() {
 
   content.innerHTML = `
     <div style="padding:20px; display:flex; flex-direction:column; gap:16px;">
-      <p style="font-size:13.5px; color:#9CA3AF;">DHARA runs an automated 7-stage disaster reachability and supply prepositioning pipeline continuously synchronizing with meteorological and telemetry inputs.</p>
+      <p style="font-size:13.5px; color:var(--text-secondary);">DHARA runs an automated 7-stage disaster reachability and supply prepositioning pipeline continuously synchronizing with meteorological and telemetry inputs.</p>
       
       <div style="display:flex; flex-direction:column; gap:10px;">
-        <div style="background:#151D2F; padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-          <div><strong>1. Forecast Ingestion</strong><div style="font-size:12px; color:#9CA3AF;">Multi-model ensemble rainfall observations</div></div>
-          <span style="color:#34D399; font-weight:700;">✓ LIVE (12m ago)</span>
+        <div style="background:var(--bg-main); padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; color:var(--text-primary);">
+          <div><strong>1. Forecast Ingestion</strong><div style="font-size:12px; color:var(--text-muted);">Multi-model ensemble rainfall observations</div></div>
+          <span style="color:var(--accent-green); font-weight:700;">✓ LIVE (12m ago)</span>
         </div>
-        <div style="background:#151D2F; padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-          <div><strong>2. Risk Calculation</strong><div style="font-size:12px; color:#9CA3AF;">Slope deg &amp; NASA COOLR landslide calibration</div></div>
-          <span style="color:#34D399; font-weight:700;">✓ LIVE (8m ago)</span>
+        <div style="background:var(--bg-main); padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; color:var(--text-primary);">
+          <div><strong>2. Risk Calculation</strong><div style="font-size:12px; color:var(--text-muted);">Slope deg &amp; NASA COOLR landslide calibration</div></div>
+          <span style="color:var(--accent-green); font-weight:700;">✓ LIVE (8m ago)</span>
         </div>
-        <div style="background:#151D2F; padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-          <div><strong>3. VRI Prediction</strong><div style="font-size:12px; color:#9CA3AF;">3,660 habitations across North-East India evaluated</div></div>
-          <span style="color:#34D399; font-weight:700;">✓ LIVE (5m ago)</span>
+        <div style="background:var(--bg-main); padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; color:var(--text-primary);">
+          <div><strong>3. VRI Prediction</strong><div style="font-size:12px; color:var(--text-muted);">3,660 habitations across North-East India evaluated</div></div>
+          <span style="color:var(--accent-green); font-weight:700;">✓ LIVE (5m ago)</span>
         </div>
-        <div style="background:#151D2F; padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-          <div><strong>4. Cutoff Countdown</strong><div style="font-size:12px; color:#9CA3AF;">Countdown timers active across vulnerable corridors</div></div>
-          <span style="color:#34D399; font-weight:700;">✓ LIVE (5m ago)</span>
+        <div style="background:var(--bg-main); padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; color:var(--text-primary);">
+          <div><strong>4. Cutoff Countdown</strong><div style="font-size:12px; color:var(--text-muted);">Countdown timers active across vulnerable corridors</div></div>
+          <span style="color:var(--accent-green); font-weight:700;">✓ LIVE (5m ago)</span>
         </div>
-        <div style="background:#151D2F; padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-          <div><strong>5. Route Evaluation</strong><div style="font-size:12px; color:#9CA3AF;">PostGIS Dijkstra &amp; A* alternate graph routing</div></div>
-          <span style="color:#34D399; font-weight:700;">✓ LIVE (4m ago)</span>
+        <div style="background:var(--bg-main); padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; color:var(--text-primary);">
+          <div><strong>5. Route Evaluation</strong><div style="font-size:12px; color:var(--text-muted);">PostGIS Dijkstra &amp; A* alternate graph routing</div></div>
+          <span style="color:var(--accent-green); font-weight:700;">✓ LIVE (4m ago)</span>
         </div>
-        <div style="background:#151D2F; padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-          <div><strong>6. Dispatch Recommendations</strong><div style="font-size:12px; color:#9CA3AF;">25 automated pre-positioning dispatches calculated</div></div>
-          <span style="color:#34D399; font-weight:700;">✓ LIVE (2m ago)</span>
+        <div style="background:var(--bg-main); padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; color:var(--text-primary);">
+          <div><strong>6. Dispatch Recommendations</strong><div style="font-size:12px; color:var(--text-muted);">25 automated pre-positioning dispatches calculated</div></div>
+          <span style="color:var(--accent-green); font-weight:700;">✓ LIVE (2m ago)</span>
         </div>
-        <div style="background:#151D2F; padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-          <div><strong>7. Audit Logging</strong><div style="font-size:12px; color:#9CA3AF;">Governance reasoning logged to PostgreSQL</div></div>
-          <span style="color:#34D399; font-weight:700;">✓ ACTIVE</span>
+        <div style="background:var(--bg-main); padding:12px 16px; border-radius:6px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; color:var(--text-primary);">
+          <div><strong>7. Audit Logging</strong><div style="font-size:12px; color:var(--text-muted);">Governance reasoning logged to PostgreSQL</div></div>
+          <span style="color:var(--accent-green); font-weight:700;">✓ ACTIVE</span>
         </div>
       </div>
     </div>
@@ -1623,11 +1627,11 @@ function renderOfficerFieldReportsView() {
   container.innerHTML = submittedFieldReports.map(r => `
     <div class="manifest-card">
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <strong style="color:#93C5FD;">${r.action}</strong>
+        <strong style="color:var(--accent-blue);">${r.action}</strong>
         <span class="pill-prov real">REAL AUDIT</span>
       </div>
-      <p style="font-size:13px; color:#E5E7EB; line-height:1.5;">${r.reasoning}</p>
-      <div style="display:flex; justify-content:space-between; font-size:11.5px; color:#9CA3AF; border-top:1px solid var(--border-color); padding-top:8px;">
+      <p style="font-size:13px; color:var(--text-secondary); line-height:1.5;">${r.reasoning}</p>
+      <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--text-muted); border-top:1px solid var(--border-color); padding-top:8px;">
         <span>Actor: Field Personnel</span>
         <span>${r.created_at ? new Date(r.created_at).toLocaleString() : 'Recent'}</span>
       </div>
@@ -1676,20 +1680,20 @@ function renderShipmentsView() {
   container.innerHTML = mockShipments.map(s => `
     <div class="manifest-card" style="cursor:pointer;" onclick="openShipmentModal('${s.license_number}')">
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <strong style="font-family:var(--font-mono); color:#93C5FD; font-size:15px;">${s.license_number}</strong>
+        <strong style="font-family:var(--font-mono); color:var(--accent-blue); font-size:15px;">${s.license_number}</strong>
         <span class="pill-prov simulated" style="background:#1E3A8A; color:#93C5FD;">${s.status}</span>
       </div>
-      <div style="font-size:14px; font-weight:700;">${s.cargo_summary}</div>
-      <div style="font-size:12.5px; color:#9CA3AF;">
-        <div>Route: <strong>${s.route_assigned}</strong></div>
-        <div>Dest: <strong>${s.destination_village}</strong> &bull; ETA: <strong>${s.estimated_arrival}</strong></div>
+      <div style="font-size:14px; font-weight:700; color:var(--text-primary);">${s.cargo_summary}</div>
+      <div style="font-size:12.5px; color:var(--text-muted);">
+        <div>Route: <strong style="color:var(--text-secondary);">${s.route_assigned}</strong></div>
+        <div>Dest: <strong style="color:var(--text-secondary);">${s.destination_village}</strong> &bull; ETA: <strong style="color:var(--text-secondary);">${s.estimated_arrival}</strong></div>
       </div>
-      <div style="background:rgba(255,255,255,0.05); height:6px; border-radius:3px; overflow:hidden;">
+      <div style="background:var(--border-color); height:6px; border-radius:3px; overflow:hidden;">
         <div style="background:var(--accent-blue); width:${s.progress_pct || 50}%; height:100%;"></div>
       </div>
-      <div style="display:flex; justify-content:space-between; font-size:11.5px; color:#6B7280;">
+      <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--text-muted);">
         <span>Driver: ${s.driver_name}</span>
-        <span style="color:#60A5FA;">Click for Manifest →</span>
+        <span style="color:var(--accent-blue);">Click for Manifest →</span>
       </div>
     </div>
   `).join("");
@@ -1703,18 +1707,18 @@ window.openShipmentModal = function(license) {
 
   content.innerHTML = `
     <div style="padding:20px; display:flex; flex-direction:column; gap:16px;">
-      <div style="background:#151D2F; padding:16px; border-radius:8px; border:1px solid var(--border-color);">
-        <h4 style="color:#93C5FD; margin-bottom:8px;">Vehicle: ${license} (12-Wheeler Heavy Relief Truck)</h4>
+      <div style="background:var(--bg-main); padding:16px; border-radius:8px; border:1px solid var(--border-color); color:var(--text-secondary);">
+        <h4 style="color:var(--accent-blue); margin-bottom:8px;">Vehicle: ${license} (12-Wheeler Heavy Relief Truck)</h4>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:13px;">
-          <div>Driver: <strong>Rajesh Kumar (+91 98765 43210)</strong></div>
-          <div>Origin Depot: <strong>Depot A (Tawang Hub)</strong></div>
-          <div>Destination: <strong>Ukhrul Sector Habitations</strong></div>
-          <div>Telemetry GPS: <strong>27.2415° N, 92.4180° E (Speed: 38 km/h)</strong></div>
+          <div>Driver: <strong style="color:var(--text-primary);">Rajesh Kumar (+91 98765 43210)</strong></div>
+          <div>Origin Depot: <strong style="color:var(--text-primary);">Depot A (Tawang Hub)</strong></div>
+          <div>Destination: <strong style="color:var(--text-primary);">Ukhrul Sector Habitations</strong></div>
+          <div>Telemetry GPS: <strong style="color:var(--text-primary);">27.2415° N, 92.4180° E (Speed: 38 km/h)</strong></div>
         </div>
       </div>
 
-      <div style="background:#151D2F; padding:16px; border-radius:8px; border:1px solid var(--border-color);">
-        <h4 style="color:#F3F4F6; margin-bottom:8px;">📦 Cargo Manifest Breakdown</h4>
+      <div style="background:var(--bg-main); padding:16px; border-radius:8px; border:1px solid var(--border-color);">
+        <h4 style="color:var(--text-primary); margin-bottom:8px;">📦 Cargo Manifest Breakdown</h4>
         <table class="dash-table">
           <thead><tr><th>Item</th><th>Quantity</th><th>Weight</th></tr></thead>
           <tbody>
@@ -1809,7 +1813,7 @@ function renderRoutesView() {
       </div>
       <div style="font-size:13px; color:#F3F4F6;">Length: <strong>${c.dist}</strong> &bull; Slope: <strong>${c.slope}</strong></div>
       <div style="font-size:13px; color:#F87171;">Closure Risk: <strong>${c.risk}</strong> &bull; Delay: <strong>${c.delay}</strong></div>
-      <div style="font-size:12px; color:#9CA3AF;">Serves: ${c.habitations}</div>
+      <div style="font-size:12px; color:var(--text-muted);">Serves: ${c.habitations}</div>
       <button class="btn-sec-link" style="margin-top:6px;" onclick="openRouteModal(liveDecisions[0])">Inspect Alternate Egress Corridor →</button>
     </div>
   `).join("");
@@ -1913,11 +1917,11 @@ function renderAuditTrailView() {
   container.innerHTML = auditData.map(a => `
     <div class="audit-card">
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <strong style="color:#93C5FD; font-family:var(--font-mono);">${a.action}</strong>
+        <strong class="audit-action">${a.action}</strong>
         <span class="pill-prov real">POSTGRESQL 16</span>
       </div>
-      <p style="font-size:13px; color:#E5E7EB; line-height:1.5;">${a.reasoning}</p>
-      <div style="display:flex; justify-content:space-between; font-size:11.5px; color:#6B7280; border-top:1px solid var(--border-color); padding-top:8px;">
+      <p class="audit-reasoning">${a.reasoning}</p>
+      <div class="audit-meta">
         <span>Confidence: ${a.confidence ? (a.confidence * 100).toFixed(0) + '%' : '100%'}</span>
         <span>${a.created_at ? new Date(a.created_at).toLocaleString() : 'Recent'}</span>
       </div>
@@ -1957,7 +1961,7 @@ function renderTrackRecordView() {
         <div style="background:#151D2F; padding:12px 16px; border-radius:6px; border-left:3px solid ${color}; display:flex; justify-content:space-between;">
           <div>
             <strong>${o.segment_id}</strong>
-            <div style="font-size:12px; color:#9CA3AF;">Predicted: ${o.prediction} &bull; Actual: ${o.actual}</div>
+            <div style="font-size:12px; color:var(--text-muted);">Predicted: ${o.prediction} &bull; Actual: ${o.actual}</div>
           </div>
           <span style="color:${color}; font-weight:700; text-transform:uppercase;">${label}</span>
         </div>
@@ -2102,18 +2106,45 @@ function initMap() {
   const mapEl = document.getElementById("map");
   if (!mapEl || map || typeof L === "undefined") return;
 
+  // Never initialize Leaflet while its container is hidden (display:none) —
+  // it measures a 0x0 box, computes the wrong tile grid, and the basemap
+  // renders as solid black blocks instead of tiles. Bail out here; the
+  // overview route handler calls initMap() again once the container is
+  // actually visible.
+  if (mapEl.offsetParent === null || mapEl.clientWidth === 0 || mapEl.clientHeight === 0) {
+    return;
+  }
+
   try {
     map = L.map('map', {
       center: [27.35, 93.4], // North-East India focus
       zoom: 7,
+      minZoom: 4,
+      maxZoom: 18,
       zoomControl: true,
-      attributionControl: false
+      scrollWheelZoom: true,
+      doubleClickZoom: true,
+      wheelPxPerZoomLevel: 90, // smoother, less jumpy scroll-wheel zoom
+      attributionControl: false,
+      preferCanvas: true // Use canvas for performance with many markers
     });
 
-    const basemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    // CARTO basemaps now require an API key (tiles render "API KEY REQUIRED"),
+    // so use keyless providers. Esri Light Gray suits the cream UI and keeps
+    // data overlays readable; OSM and satellite imagery are switchable.
+    const esriAttr = 'Tiles &copy; <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>';
+    const esri = (service) => L.tileLayer(`https://server.arcgisonline.com/ArcGIS/rest/services/${service}/MapServer/tile/{z}/{y}/{x}`, {
+      maxZoom: 18, maxNativeZoom: 16, attribution: esriAttr
+    });
+    const basemap = L.layerGroup([
+      esri('Canvas/World_Light_Gray_Base'),
+      esri('Canvas/World_Light_Gray_Reference')
+    ]).addTo(map);
+    const osmBasemap = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
-      subdomains: 'abcd'
-    }).addTo(map);
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
+    });
+    const satelliteBasemap = esri('World_Imagery');
 
     mapLayers.habitations = L.layerGroup().addTo(map);
     mapLayers.roads = L.layerGroup().addTo(map);
@@ -2121,19 +2152,43 @@ function initMap() {
     mapLayers.incidents = L.layerGroup().addTo(map);
     mapLayers.dispatches = L.layerGroup().addTo(map);
     
-    mapLayerControl = L.control.layers({ "Dark Basemap": basemap }, {
+    mapLayerControl = L.control.layers({
+      "Light Gray (Esri)": basemap,
+      "Streets (OpenStreetMap)": osmBasemap,
+      "Satellite (Esri)": satelliteBasemap
+    }, {
       "🏘️ Habitations": mapLayers.habitations,
       "🛣️ At-Risk Roads": mapLayers.roads,
       "🚚 Fleet & Vehicles": mapLayers.vehicles,
       "📦 Active Dispatches": mapLayers.dispatches,
       "⚠️ Field Incidents": mapLayers.incidents
-    }, { collapsed: false }).addTo(map);
+    }, { collapsed: true, position: 'topleft' }).addTo(map); // top-right is taken by the VRI legend
 
     updateMapLayers();
 
-    setTimeout(() => {
-      if (map) map.invalidateSize();
-    }, 250);
+    // Live hazard intel overlays (NASA GIBS, RainViewer, USGS, Open-Meteo) — see intel-layers.js
+    if (window.DharaIntel) window.DharaIntel.attach(map);
+    // Lazy-loaded 3D terrain view (CesiumJS + keyless terrain) — see terrain3d.js
+    if (window.DharaTerrain3D) window.DharaTerrain3D.attach(map);
+    // Shared officer map notes, measuring, situation snapshot — see ops-tools.js
+    if (window.DharaOps) window.DharaOps.attach(map);
+
+    // Re-measure a couple of times shortly after init — fonts/layout can
+    // still shift the container size right after it becomes visible.
+    setTimeout(() => { if (map) map.invalidateSize(); }, 250);
+    setTimeout(() => { if (map) map.invalidateSize(); }, 750);
+
+    // Keep tracking the container's real size for as long as the map
+    // lives — sidebar collapse, window resize, font swap, etc. would
+    // otherwise leave Leaflet's internal size stale and the basemap would
+    // only paint tiles for the old (smaller) box, leaving blank margins.
+    if (typeof ResizeObserver !== "undefined") {
+      const wrapperEl = mapEl.closest(".map-viewport-wrapper") || mapEl;
+      const ro = new ResizeObserver(() => {
+        if (map) map.invalidateSize();
+      });
+      ro.observe(wrapperEl);
+    }
   } catch (err) {
     console.warn("Map init exception:", err);
   }
@@ -2150,24 +2205,38 @@ window.updateMapLayers = function() {
   mapLayers.dispatches.clearLayers();
 
   // Habitations
-  if (window.habitationsData) {
-    window.habitationsData.forEach(f => {
+  if (habitationsData) {
+    habitationsData.forEach(f => {
       const p = f.properties;
       const coords = f.geometry.coordinates;
-      const color = p.vri < 30 ? '#DC2626' : (p.vri < 70 ? '#D97706' : '#10B981');
-      
+
+      // Derive both the dot color AND the popup's risk label from the same
+      // `vri` value/thresholds used in the map legend (High Reachability
+      // >=70 / Moderate 30-69 / Cut-Off <30). Previously the label used a
+      // separate `reachability_prob` field with its own unrelated 0.5
+      // cutoff, so a red "severe risk" dot could show "Risk: LOW" — the
+      // color and text were never guaranteed to agree.
+      let color, riskLabel;
+      if (p.vri < 30) {
+        color = '#DC2626'; riskLabel = 'HIGH — Cut-Off / Severe Risk';
+      } else if (p.vri < 70) {
+        color = '#D97706'; riskLabel = 'MODERATE';
+      } else {
+        color = '#10B981'; riskLabel = 'LOW — High Reachability';
+      }
+
       const marker = L.circleMarker([coords[1], coords[0]], {
         radius: 6, fillColor: color, color: '#FFFFFF', weight: 1, opacity: 1, fillOpacity: 0.9
       });
-      
-      marker.bindPopup(`<strong>📍 ${p.name}</strong><br>VRI: ${p.vri.toFixed(1)}/100<br>Risk: ${p.reachability_prob < 0.5 ? 'HIGH' : 'LOW'}<br>Cutoff: ${p.hours_until_cutoff ? p.hours_until_cutoff + 'h' : 'N/A'}`);
+
+      marker.bindPopup(`<strong>📍 ${p.name}</strong><br>VRI: ${p.vri.toFixed(1)}/100<br>Risk: ${riskLabel}<br>Cutoff: ${p.hours_until_cutoff ? p.hours_until_cutoff + 'h' : 'N/A'}`);
       mapLayers.habitations.addLayer(marker);
     });
   }
 
   // Roads
-  if (window.atRiskSegmentsData) {
-    L.geoJSON(window.atRiskSegmentsData, {
+  if (atRiskSegmentsData) {
+    L.geoJSON(atRiskSegmentsData, {
       style: function(feature) {
         const prob = feature.properties.closure_probability;
         const color = prob >= 0.5 ? '#DC2626' : (prob >= 0.25 ? '#D97706' : '#2563EB');
@@ -2180,8 +2249,8 @@ window.updateMapLayers = function() {
   }
   
   // Vehicles
-  if (window.vehiclesData) {
-    window.vehiclesData.forEach(v => {
+  if (vehiclesData) {
+    vehiclesData.forEach(v => {
       const marker = L.circleMarker([v.coordinates[1], v.coordinates[0]], {
         radius: 7, fillColor: '#2563EB', color: '#FFFFFF', weight: 2, opacity: 1, fillOpacity: 0.9
       });
@@ -2191,8 +2260,8 @@ window.updateMapLayers = function() {
   }
 
   // Depots/Dispatches
-  if (window.depotsData) {
-    window.depotsData.forEach(d => {
+  if (depotsData) {
+    depotsData.forEach(d => {
       if (!d.location || !d.location.coordinates) return;
       const coords = d.location.coordinates;
       const marker = L.circleMarker([coords[1], coords[0]], {
@@ -2323,7 +2392,12 @@ function initAnalyticsCharts() {
     });
   }
 
-  initMap();
+  // Note: the Leaflet map is intentionally NOT initialized here. This
+  // function runs on initial page load, before the officer dashboard is
+  // ever shown, so the #map container is still display:none — initializing
+  // Leaflet against a hidden/zero-size container is what caused the basemap
+  // to render as solid black blocks. handleRoute() initializes the map once
+  // the Overview view actually becomes visible.
 }
 
 // ====================================================
